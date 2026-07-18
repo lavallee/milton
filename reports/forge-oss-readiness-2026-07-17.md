@@ -3,9 +3,9 @@
 ## Result
 
 Milton now satisfies the repository-shape and locally testable portions of the
-OSS release standard. This is a release-candidate result, not a claim that
-v0.1.0 has been published. Strict public-source graduation also depends on the
-Fab disposition described below.
+OSS release standard. This is the retained release-candidate proof for v0.1.0;
+live publication is verified separately from this checked-in pre-release
+record.
 
 ## Public-source gate
 
@@ -47,20 +47,23 @@ The expected projection is retained at
 - offline high/high Zizmor audit: no findings in CI or publish workflows; and
 - tracked public-source scrub and `git diff --check`: clean.
 
-## External release gates still open
+## External release-gate disposition — 2026-07-18
 
-1. Fab is a named, implemented adapter and boundary in Milton's existing public
-   history, while the current private release doctrine still classifies Fab as
-   internal-only. Removing the adapter would contradict Milton's integration
-   direction. Before release, either publish Fab after its receipt changes land
-   or record an explicit doctrine revision that permits this public contract.
-2. The review branch must pass GitHub Actions from a committed tree.
-3. Register the pending PyPI trusted publisher for project `milton-ai`,
-   repository `lavallee/milton`, workflow `publish.yml`, environment
-   `pypi-milton-ai`.
-4. Merge, create a clean annotated `v0.1.0` tag and GitHub release, and observe
-   the OIDC publish job succeed.
-5. Install the published artifact in a new environment and rerun the retained
-   smoke.
-6. Enable and verify GitHub Pages from `main` / `docs` after the landing page is
-   merged.
+1. **Resolved — optional Fab boundary.** The Forge OSS doctrine now permits a
+   named adapter for an optional non-public producer only when the public
+   interchange contract is self-contained and the adapter has no install,
+   import, or default-runtime dependency on that producer. Milton satisfies
+   that rule: its wheel installs with `--no-deps`, the reader is Milton-owned,
+   and absent Fab receipts are a coverage gap rather than a failure. Fab does
+   not need to be public for Milton to be published.
+2. **Resolved — committed-tree CI.** The implementation branch was merged and
+   the resulting `main` GitHub Actions run passed.
+3. **Resolved — trusted publisher registration.** The pending publisher is
+   registered for project `milton-ai`, repository `lavallee/milton`, workflow
+   `publish.yml`, and environment `pypi-milton-ai`.
+4. **Release execution.** Create an annotated `v0.1.0` tag and published GitHub
+   release from a clean, green `main`, then require the OIDC job to pass.
+5. **Artifact verification.** Download the exact published version into a new
+   environment and rerun the retained wheel smoke.
+6. **Site verification.** Enable GitHub Pages from `main` / `docs` and verify
+   the deployed landing page.

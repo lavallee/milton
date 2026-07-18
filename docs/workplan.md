@@ -19,8 +19,8 @@ phase is not considered complete because its types or storage exist.
 Family-standard shape (the somm/chip pattern):
 
 - `milton-ai` configured for PyPI, import package `milton`, src layout,
-  hatchling, MIT, Python ≥3.12. The OIDC workflow and clean-wheel smoke are
-  present; the first trusted-publishing run remains a release gate.
+  hatchling, MIT, Python ≥3.12. Releases use the OIDC workflow, and the
+  clean-wheel smoke proves the dependency-free installed surface.
 - **Light dependency-free core and built-ins.** Core = the normalized event model, the
   findings/grading ledger, the ID crosswalk, the store, and the query/CLI
   surface, and filesystem/SQLite/Git readers. The shipped adapters require no

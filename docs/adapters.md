@@ -5,6 +5,12 @@ of them by default; `milton scan codex fab git` limits a pass. Every emitted
 field declares recovered, inferred, unavailable, or redacted coverage, and a
 source failure is recorded without stopping the other adapters.
 
+The Fab adapter is a format reader, not a package integration. Milton neither
+imports nor installs Fab: it reads the documented receipt shape when those
+receipts are present and otherwise records the source as unavailable. This
+keeps Milton independently installable and useful even while Fab is private or
+absent.
+
 | Adapter | Default Lisbon source | Recovered surface |
 | --- | --- | --- |
 | `claude-code` | `~/.claude/projects/**/*.jsonl` | sessions and subagents, turns, streamed model usage, paired tools |
