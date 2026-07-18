@@ -1,0 +1,31 @@
+{
+  "schema": "milton.procedure-source-evidence/v1",
+  "source_finding_id": "fnd_d0d736bd26707214a5ea3514",
+  "source_synthesis_receipt_id": "syn_45e6a8b4a33212a6f723084c",
+  "source_evaluation_result_id": "evr_4d9dc501cafb85df13703f29",
+  "source_snapshot": "sha256:dd5540f7fbf0157c26ae842913f5468ad707907a4b799ff6bb14720182282f04",
+  "occurrence_refs": [
+    "milton.event=evt_0590873bcf549b196d43a0aa",
+    "milton.event=evt_3b779a5183863d2081f0322f",
+    "milton.event=evt_4fc9ea214178b3faed1080c9"
+  ],
+  "counterexample_refs": [
+    "milton.evaluation-result=evr_4d9dc501cafb85df13703f29#failed-tool-controls"
+  ],
+  "fixture_refs": [
+    "experiments/procedure-promotion/fixtures/development.json",
+    "experiments/procedure-promotion/fixtures/heldout.json",
+    "experiments/procedure-promotion/fixtures/operational.json"
+  ],
+  "limits": {
+    "claim": "exact failed tool-input fingerprints recur across independent sessions",
+    "does_not_claim": [
+      "root cause",
+      "avoidable cost",
+      "that a scope change resolves every permission failure"
+    ],
+    "source_population_sessions": 54,
+    "bounded_evaluation_sessions": 24,
+    "expires_at": "2026-08-01T00:00:00Z"
+  }
+}

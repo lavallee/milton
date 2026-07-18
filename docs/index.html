@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Milton turns local LLM-agent exhaust into conservative accounting, attribution, and graded operational findings.">
+  <title>Milton — understand what your agents did</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Milton / v0.1.0</p>
+    <h1>Understand what your agents actually did.</h1>
+    <p class="lede">Milton reads the traces, receipts, ledgers, and Git history
+      you already have. It joins work across layers without inventing custody,
+      separates reported from computed cost, and turns repeated evidence into
+      findings you can inspect and grade.</p>
+
+    <nav class="actions" aria-label="Primary links">
+      <a href="https://github.com/lavallee/milton">Source on GitHub</a>
+      <a href="https://pypi.org/project/milton-ai/">Package on PyPI</a>
+    </nav>
+
+    <pre class="terminal"><code>pip install milton-ai
+milton init
+milton scan --since 7d
+milton accounting --since 7d
+milton cost --per-outcome --since 7d</code></pre>
+
+    <section class="grid" aria-label="Capabilities">
+      <article>
+        <h2>Conservative accounting</h2>
+        <p>Reported and computed amounts stay visible. Exact shared keys—not
+          adjacency or similar totals—control deduplication.</p>
+      </article>
+      <article>
+        <h2>Outcome attribution</h2>
+        <p>Inspect the path from model call through runner and work registry to
+          shipped outcome, including ambiguity and coverage gaps.</p>
+      </article>
+      <article>
+        <h2>Graded findings</h2>
+        <p>Failure motifs, procedure candidates, and memory-hygiene leads carry
+          bounded evidence, review state, and expiry.</p>
+      </article>
+      <article>
+        <h2>Local by default</h2>
+        <p>The dependency-free core starts no service, sends no telemetry, and
+          hashes transcript content unless full recovery is requested.</p>
+      </article>
+    </section>
+
+    <aside class="principle">
+      <strong>Traceability is the product.</strong> Milton associates identities
+      separately from directed work relations, preserves native coordinates,
+      and abstains when the evidence does not support a join.
+    </aside>
+
+    <section class="status">
+      <p><strong>Status:</strong> v0.1.0 pre-alpha. The deterministic foundation,
+        twelve read-only adapters, accounting, attribution, append-only finding
+        review, and one evaluated procedure-return loop are implemented. Some
+        finding generators remain deliberately offline or narrowed until their
+        held-out evidence is strong enough.</p>
+      <p>Python 3.12+ · MIT licensed · dependency-free runtime core</p>
+    </section>
+  </main>
+</body>
+</html>

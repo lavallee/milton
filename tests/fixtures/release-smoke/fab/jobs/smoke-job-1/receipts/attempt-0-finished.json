@@ -1,0 +1,33 @@
+{
+  "accounting": {
+    "amount_usd": "0.25",
+    "child_accounting_keys": ["somm.call=smoke-call-1"],
+    "counting": false,
+    "observation_role": "rollup"
+  },
+  "attempt_id": "smoke-job-1:attempt:0",
+  "attempt_idx": 0,
+  "backend": "somm",
+  "correlation_id": "smoke-job-1:attempt:0",
+  "job_id": "smoke-job-1",
+  "kind": "attempt_finished",
+  "native_coordinates": [
+    {"namespace": "somm.call", "value": "smoke-call-1"}
+  ],
+  "occurred_at": "2026-07-01T10:02:00Z",
+  "outcome": {"exit_code": 0, "reason": "synthetic success", "status": "succeeded"},
+  "receipt_id": "smoke-attempt-finished",
+  "relations": [
+    {
+      "object": {"namespace": "fab.job", "value": "smoke-job-1"},
+      "predicate": "attempt_of",
+      "subject": {"namespace": "fab.attempt", "value": "smoke-job-1:attempt:0"}
+    },
+    {
+      "object": {"namespace": "somm.call", "value": "smoke-call-1"},
+      "predicate": "produced",
+      "subject": {"namespace": "fab.attempt", "value": "smoke-job-1:attempt:0"}
+    }
+  ],
+  "schema": "fab.execution-receipt/v1"
+}

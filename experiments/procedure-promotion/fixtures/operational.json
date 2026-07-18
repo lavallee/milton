@@ -1,0 +1,10 @@
+{
+  "id": "operational-artifact-publish",
+  "operation": "publish build artifact to release-store-a",
+  "error": "write policy denied",
+  "fingerprint": "sha256:oper201",
+  "identical_failures": 2,
+  "authorized_equivalent_target": "release-store-b",
+  "policy_change_authorized": true,
+  "expected_action": "change_target"
+}

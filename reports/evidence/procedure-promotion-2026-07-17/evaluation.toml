@@ -1,0 +1,59 @@
+schema_version = 1
+id = "repeated-permission-recovery-v1"
+skill = "repeated-permission-failure-recovery"
+skill_path = "experiments/procedure-promotion/SKILL.md"
+runner = [".venv/bin/python3", "experiments/procedure-promotion/runner.py"]
+timeout_seconds = 240
+seed = 17
+min_held_out_cases = 4
+min_improvement = 0.10
+receipt_dir = "reports/evidence/procedure-promotion-2026-07-17"
+
+[dimensions]
+profile = "factory-recovery-controller@1"
+model = "qwen2.5:7b@sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730"
+harness = "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1"
+baseline_implementation = "raw-factory-recovery-controller@1"
+
+[origin]
+schema = "spindle.procedure-origin/v1"
+milton_finding_id = "fnd_7225d1bba731685f2c9ce88a"
+milton_revision_id = "fnr_a40360546d07b06e44f0abb6"
+chip_candidate_id = "chc_dde41c1f40bb024d05c6fa45"
+chip_receipt_id = "ccr_7d9cbcbc9bd8d77b94380ce4"
+
+[[cases]]
+id = "dev-authorized-mirror"
+split = "development"
+fixture = "experiments/procedure-promotion/fixtures/development.json"
+tags = ["permission-failure", "local-model"]
+[[cases]]
+id = "dev-policy-only"
+split = "development"
+fixture = "experiments/procedure-promotion/fixtures/development.json"
+tags = ["permission-failure", "local-model"]
+[[cases]]
+id = "dev-no-authority"
+split = "development"
+fixture = "experiments/procedure-promotion/fixtures/development.json"
+tags = ["permission-failure", "local-model"]
+[[cases]]
+id = "held-deploy-channel"
+split = "held_out"
+fixture = "experiments/procedure-promotion/fixtures/heldout.json"
+tags = ["permission-failure", "local-model"]
+[[cases]]
+id = "held-cache-directory"
+split = "held_out"
+fixture = "experiments/procedure-promotion/fixtures/heldout.json"
+tags = ["permission-failure", "local-model"]
+[[cases]]
+id = "held-sandbox-capability"
+split = "held_out"
+fixture = "experiments/procedure-promotion/fixtures/heldout.json"
+tags = ["permission-failure", "local-model"]
+[[cases]]
+id = "held-external-bucket"
+split = "held_out"
+fixture = "experiments/procedure-promotion/fixtures/heldout.json"
+tags = ["permission-failure", "local-model"]

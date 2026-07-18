@@ -1,0 +1,25 @@
+{
+  "backend": "somm",
+  "cwd": "/synthetic/milton-smoke",
+  "intent": "harness",
+  "job_id": "smoke-job-1",
+  "kind": "job_submitted",
+  "occurred_at": "2026-07-01T10:00:00Z",
+  "origin": {
+    "commission_fingerprint": "sha256:synthetic",
+    "commission_revision": "1",
+    "entry_id": "smoke-gate-1",
+    "entry_namespace": "george.entry",
+    "source": "george"
+  },
+  "receipt_id": "smoke-job-submitted",
+  "relations": [
+    {
+      "object": {"namespace": "fab.job", "value": "smoke-job-1"},
+      "predicate": "verifies",
+      "subject": {"namespace": "george.entry", "value": "smoke-gate-1"}
+    }
+  ],
+  "schema": "fab.execution-receipt/v1",
+  "submitter": "synthetic-release-smoke"
+}

@@ -1,20 +1,35 @@
 # Workplan: footprint and phases
 
-Status: pre-build commission, 2026-07-17. The build starts in its own
-session; this document is the contract for what gets built and in what
-order.
+Status: the 28-task implementation plan was worked through on Lisbon on
+2026-07-17: 27 tasks completed and the George stale-gate live checkpoint was
+explicitly narrowed. The core contracts, twelve built-in source adapters,
+conservative cost-per-outcome projection, finding lifecycle, evaluated motif
+and memory audits, Chip candidate feed, and Spindle/Fab/Somm procedure return
+loop are executable. This is implementation/checkpoint closure, not an
+operational-release claim; the cross-cutting release gates in `ROADMAP.md`
+remain authoritative.
+
+This document is the capability taxonomy. [ROADMAP.md](../ROADMAP.md) is the
+gated product sequence; [`plans/milton-product/`](../plans/milton-product/) is
+the Forge-derived architecture and executable work breakdown. A horizontal
+phase is not considered complete because its types or storage exist.
 
 ## Package footprint
 
 Family-standard shape (the somm/chip pattern):
 
-- `milton-agents` on PyPI, import package `milton`, src layout, hatchling,
-  MIT, Python ≥3.12.
-- **Light core, adapter extras.** Core = the normalized event model, the
+- `milton-ai` configured for PyPI, import package `milton`, src layout,
+  hatchling, MIT, Python ≥3.12. The OIDC workflow and clean-wheel smoke are
+  present; the first trusted-publishing run remains a release gate.
+- **Light dependency-free core and built-ins.** Core = the normalized event model, the
   findings/grading ledger, the ID crosswalk, the store, and the query/CLI
-  surface — minimal dependencies. Each adapter is an extra
-  (`milton-agents[claude-code]`, `[codex]`, `[somm]`, `[fab]`, `[otel]`,
-  `[git]`) so installing milton never drags in what you don't read.
+  surface, and filesystem/SQLite/Git readers. The shipped adapters require no
+  Python runtime dependencies. A future OTel/network adapter may be an extra;
+  installing Milton never starts or transmits anything.
+- **Vertically integrated evidence semantics.** Identity, relations,
+  accounting, attribution, grading, and receipts stay Milton-owned. External
+  mechanisms enter only through the complete-open-source, offline-exit, and
+  replacement gate in [build, borrow, or adopt](build-vs-adopt.md).
 - **Local-first storage**: append-only JSONL for findings (the grading
   ledger is an audit log), SQLite for the normalized event index. No
   server, no telemetry, nothing leaves the machine.
@@ -32,22 +47,51 @@ Family-standard shape (the somm/chip pattern):
 2. **The crosswalk**: joins across id schemes (harness session id, gateway
    correlation id, runner job id, commit/PR). Every join is itself a
    record with a confidence and a method, queryable and refutable.
-3. **Findings**: typed (`cost-per-outcome`, `failure-motif`,
-   `procedure-candidate`, `memory-hygiene`, `drift`), graded
+3. **Directed relations**: causal/workflow assertions such as `attempt_of`,
+   `produced`, `verifies`, `acts_on`, and `promotes`. They are evidence-bearing
+   and refutable but remain distinct from identity association.
+4. **Findings**: typed (`failure-motif`, `procedure-candidate`,
+   `memory-hygiene`, `drift`, plus actionable anomalies derived from
+   accounting/outcome projections), graded
    (`lead → candidate → corroborated`, refuted-retained), each carrying
    evidence refs into the event store. Findings are projections with
    manifests: source snapshot, generator, scope, confidence-as-coverage,
    expiry.
+5. **Action receipts**: not a mutable finding status or second action ledger.
+   Milton derives current disposition and historical acted-on/refuted/
+   evaluated/promoted state by relating an exact finding revision to a
+   canonical George/Git/Fab/Somm/Spindle receipt. Coverage loss changes
+   freshness, not valid history.
 
 ## Phases
 
 **Phase 0 — read everything (deterministic only).**
-Adapters: Claude Code JSONL, Codex sessions, somm ledgers (per-project +
-global), fab receipts/rollups/lifecycle, git log. Normalized store + the
+Adapters: Claude Code JSONL, Codex sessions, Somm's global ledger by default
+with explicit alternate roots supported, Fab receipts/rollups/lifecycle, and
+Git log. Normalized store + the
 crosswalk + `milton report` (what ran, where, cost by source — parity with
 cost tools, then past them by joining sources). Exit: one command answers
 "what did agents do this week and what did it cost," with a stated
 coverage map. No LLM calls anywhere in phase 0.
+
+Operational proof on Lisbon: the original deterministic eight read Claude
+Code, Codex, Somm, Fab, George, Git, Hermes, and OpenCode. Chip, Spindle,
+native-memory, and decision-memory later joined the built-in registry at their
+public receipt/readback boundaries. A fixed-cutoff repeat pass skips unchanged
+sources and appends growing transcripts without conflicts; stored coverage
+includes zero-event adapters. `milton scan --since 7d` is the one-command
+surface. `milton accounting` separates reported/computed
+provenance and marginal/notional/included semantics, applies precedence only
+to exact accounting keys, and leaves source-local overlap visible. Dollar
+totals remain coverage-qualified where a native harness supplies tokens but no
+amount.
+
+The planned producer contracts were implemented: Somm carries source-owned
+request/custody fields and exact evaluation calls; Fab emits stable
+attempt/outcome/verifier/artifact receipts and non-counting child-keyed
+rollups. Real records that predate those contracts or providers that expose no
+stable billing id remain source-local coverage gaps rather than dedup
+heuristics.
 
 **Phase 1 — outcomes.**
 Join spend to outcomes: commits/PRs (merged/reverted), runner terminal
@@ -56,24 +100,26 @@ cost per landed change computed from real history, with the attribution
 method and its known noise documented rather than hidden.
 
 **Phase 2 — synthesis (the wedge).**
-Facet extraction + clustering over sessions (the Clio pattern: extract →
-cluster → describe, with aggregation thresholds), producing failure-motif
-and drift findings as graded leads; corroboration against receipts
-promotes them. Includes the finding-quality eval harness: a held-out
-labeled set, precision floors, and a refuted-findings ledger. Exit:
-motif findings whose precision is measured, not asserted.
+Compare direct bounded analysis with facet → cluster → describe on the same
+held-out corpus before choosing a maintained pipeline. The accepted method uses
+aggregation thresholds and produces failure-motif and drift findings as graded
+leads; independent receipts promote them. Includes the finding-quality eval
+harness: a held-out labeled set, precision floors, and retained refutations.
+Exit: motif findings whose precision and operator effect are measured, not
+asserted.
 
 **Phase 3 — memory hygiene.**
-Read-back auditing across memory stores (agent memory dirs, rules files,
-skills): what exists, what is loaded, what is ever consulted, what is
-write-only. Retention recommendations as findings (retire/park/keep), never
-auto-deletion. Exit: a read-back coverage report over at least two memory
-systems.
+Read-back auditing across memory stores (including a memory runtime such as
+agentmemory plus file/rules/skills stores): what exists, what is loaded,
+retrieved, referenced, demonstrably applied, or unknown. Retention
+recommendations are findings (retire/park/keep), never auto-deletion. Exit: a
+stage-honest read-back coverage report over at least two memory systems.
 
 **Phase 4 — procedure candidates.**
-Recurring work-shape mining over sessions + receipts, emitted in chip's
-candidate-ledger convention with harvested fixture material. Exit: a
-candidate feed a distillation pipeline can mint from.
+Recurring work-shape mining over sessions + receipts, emitted as an idempotent
+projection of Chip's candidate-ledger convention with counterexamples and
+fixture material. Spindle remains the evaluation/binding owner. Exit: one
+candidate feed plus a return receipt that later operational outcomes can join.
 
 ## Principles carried forward (learned building the chip stack)
 
@@ -96,13 +142,23 @@ candidate feed a distillation pipeline can mint from.
 - **Names are identity.** Findings and events carry stable ids from day
   one; append-only corrections supersede rather than erase.
 
-## Open questions for the build session
+## Decisions from the Phase 0 build
 
-1. Store choice detail: single SQLite with JSONL sidecars, or DuckDB for
-   the analytical queries? (Phase 0 decides on real volume.)
-2. How much of the somm ledger schema to mirror vs reference by id.
-3. Redaction defaults for transcript-derived evidence quoted in findings.
-4. Whether the phase-2 synthesis runs batch-only or supports an incremental
-   cursor from day one (chip-shaped from the start).
-5. Adapter conformance kit: how a third party proves a new adapter honest
-   (the chip conformance-kit pattern, applied to readers).
+1. SQLite remains the normalized event and crosswalk index; append-only JSONL
+   remains the findings ledger. Lisbon-scale scans do not require DuckDB.
+2. Somm call facts are mirrored into typed events while raw bodies remain in
+   Somm and are referenced by native IDs.
+3. Metadata-only is the default. Sensitive bodies are hashed/length-counted;
+   raw storage is an explicit `--content full` opt-in.
+4. Ingestion is incremental from day one through source fingerprints, SQLite
+   WAL awareness, Git-ref fingerprints, and stable IDs.
+5. Adapter conformance is enforced through host-shaped fixtures, privacy-mode
+   tests, stable replay/conflict behavior, fail-open diagnostics, and a live
+   Lisbon first-pass/repeat-pass smoke gate.
+6. Identity association and causal/workflow relation are separate contracts;
+   connected records do not automatically prove attribution.
+7. Cross-source retrospective accounting and task outcomes belong in Milton;
+   Somm keeps source-local hot-path controls and consumes optional versioned
+   projections without a required dependency.
+8. The first finding proof is deterministic stale/re-minted George-gate
+   detection, gated by labeled precision and a real external action receipt.
