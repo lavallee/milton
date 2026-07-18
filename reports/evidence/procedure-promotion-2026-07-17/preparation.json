@@ -1,0 +1,9 @@
+{
+  "chip_candidate_id": "chc_dde41c1f40bb024d05c6fa45",
+  "chip_receipt_id": "ccr_7d9cbcbc9bd8d77b94380ce4",
+  "finding_id": "fnd_7225d1bba731685f2c9ce88a",
+  "finding_revision_id": "fnr_a40360546d07b06e44f0abb6",
+  "manifest": "reports/evidence/procedure-promotion-2026-07-17/evaluation.toml",
+  "replay_safe": true,
+  "schema": "milton.procedure-pilot-preparation/v1"
+}

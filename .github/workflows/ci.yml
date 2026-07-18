@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
+      - name: Sync
+        run: uv sync --frozen
+      - name: Check formatting
+        run: uv run ruff format --check src/ tests/
+      - name: Lint
+        run: uv run ruff check src/ tests/ --output-format=github
+      - name: Type check
+        run: uv run mypy --strict src/ tests/
+      - name: Test
+        run: uv run pytest -q
+      - name: Build distributions
+        run: uv build
+      - name: Smoke-test clean wheel install
+        run: uv run python scripts/release_smoke.py dist/milton_agents-*.whl
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          enable-cache: true
+          python-version: "3.13"
+      - name: Export locked runtime requirements
+        run: >
+          uv export --no-dev --no-emit-project --format requirements.txt --frozen
+          --output-file requirements-audit.txt
+      - name: Audit Python dependencies
+        run: >
+          uvx --from pip-audit pip-audit -r requirements-audit.txt
+          --strict --no-deps --disable-pip
+      - name: Audit GitHub Actions
+        run: >
+          uvx --from zizmor zizmor .github/workflows
+          --offline --min-severity high --min-confidence high --format github

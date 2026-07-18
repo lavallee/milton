@@ -1,8 +1,13 @@
 __pycache__/
-*.pyc
-.venv/
-dist/
+*.py[cod]
+*.jsonl.lock
+*.egg-info/
+.mypy_cache/
 .pytest_cache/
 .ruff_cache/
+.venv/
+dist/
+build/
+.milton/
 uv.lock.bak
 .somm/

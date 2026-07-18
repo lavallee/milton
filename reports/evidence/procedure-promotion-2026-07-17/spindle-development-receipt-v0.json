@@ -1,0 +1,346 @@
+{
+  "baseline_tuple": {
+    "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+    "implementation": "raw-factory-recovery-controller@1",
+    "model": "qwen2.5:7b@sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+    "profile": "factory-recovery-controller@1"
+  },
+  "created_at": "2026-07-18T01:31:48.719411+00:00",
+  "dimensions": {
+    "baseline_implementation": "raw-factory-recovery-controller@1",
+    "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+    "model": "qwen2.5:7b@sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+    "profile": "factory-recovery-controller@1"
+  },
+  "evaluation_id": "repeated-permission-recovery-v1",
+  "evaluation_tuple": {
+    "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+    "implementation": "sha256:9061e729a5dbcf919d87b1845407681d27259a33db88c4580640d14a14824c73",
+    "model": "qwen2.5:7b@sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+    "profile": "factory-recovery-controller@1"
+  },
+  "manifest": "reports/evidence/procedure-promotion-2026-07-17/evaluation.toml",
+  "manifest_sha256": "2816c1791917a2f4ff6f5e228676e7d177d541e877bcea7c387502e4f18c4ece",
+  "origin": {
+    "chip_candidate_id": "chc_dde41c1f40bb024d05c6fa45",
+    "chip_receipt_id": "ccr_7d9cbcbc9bd8d77b94380ce4",
+    "milton_finding_id": "fnd_7225d1bba731685f2c9ce88a",
+    "milton_revision_id": "fnr_a40360546d07b06e44f0abb6",
+    "schema": "spindle.procedure-origin/v1"
+  },
+  "promotion": {
+    "eligible": false,
+    "observed_delta": null,
+    "reasons": [
+      "insufficient-held-out-cases",
+      "incomplete-pairs"
+    ],
+    "required_cases": 4,
+    "required_improvement": 0.1
+  },
+  "receipt_id": "spr-eval-e3790bf8e58c734f09d9cb0d",
+  "run_id": "20260718T013134695013Z",
+  "runs": [
+    {
+      "arm": "baseline",
+      "case_id": "dev-authorized-mirror",
+      "duration_ms": 4190,
+      "exit_code": 0,
+      "fixture": "experiments/procedure-promotion/fixtures/development.json",
+      "fixture_sha256": "b75a991c13bc3f1d0e3b373024734fdf662e3b8ec656164ffd4b541038f97741",
+      "result": {
+        "artifacts": [],
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": false,
+            "correct_action": false,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 4125763185,
+          "expected_action": "change_target",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "repeat_identical",
+          "response_sha256": "1bd6af92f808727d59a51e047e9a305baff6aa466a3203da5d0325d01b391e31",
+          "tokens_in": 115,
+          "tokens_out": 55
+        },
+        "metrics": {
+          "policy_adherence": 0.30000000000000004
+        },
+        "passed": false,
+        "score": 0.30000000000000004,
+        "skill_invoked": false
+      },
+      "split": "development",
+      "status": "ok",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tags": [
+        "permission-failure",
+        "local-model"
+      ]
+    },
+    {
+      "arm": "variant",
+      "case_id": "dev-authorized-mirror",
+      "duration_ms": 2302,
+      "exit_code": 0,
+      "fixture": "experiments/procedure-promotion/fixtures/development.json",
+      "fixture_sha256": "b75a991c13bc3f1d0e3b373024734fdf662e3b8ec656164ffd4b541038f97741",
+      "result": {
+        "artifacts": [],
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": true,
+            "correct_action": false,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 2239577200,
+          "expected_action": "change_target",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "change_policy",
+          "response_sha256": "c534a4c966922b13823440369e2e7aff9d05afefd115a067a47c664e64d5cace",
+          "tokens_in": 292,
+          "tokens_out": 71
+        },
+        "metrics": {
+          "policy_adherence": 0.4
+        },
+        "passed": false,
+        "score": 0.4,
+        "skill_invoked": true
+      },
+      "split": "development",
+      "status": "ok",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tags": [
+        "permission-failure",
+        "local-model"
+      ]
+    },
+    {
+      "arm": "baseline",
+      "case_id": "dev-policy-only",
+      "duration_ms": 1734,
+      "exit_code": 0,
+      "fixture": "experiments/procedure-promotion/fixtures/development.json",
+      "fixture_sha256": "b75a991c13bc3f1d0e3b373024734fdf662e3b8ec656164ffd4b541038f97741",
+      "result": {
+        "artifacts": [],
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": true,
+            "correct_action": false,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 1671336797,
+          "expected_action": "change_policy",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "escalate",
+          "response_sha256": "f21c90103a9e95d39374fd3fc7611408ecd0657a1f1754adda6c7070cb0cc7ff",
+          "tokens_in": 110,
+          "tokens_out": 55
+        },
+        "metrics": {
+          "policy_adherence": 0.4
+        },
+        "passed": false,
+        "score": 0.4,
+        "skill_invoked": false
+      },
+      "split": "development",
+      "status": "ok",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tags": [
+        "permission-failure",
+        "local-model"
+      ]
+    },
+    {
+      "arm": "variant",
+      "case_id": "dev-policy-only",
+      "duration_ms": 2172,
+      "exit_code": 0,
+      "fixture": "experiments/procedure-promotion/fixtures/development.json",
+      "fixture_sha256": "b75a991c13bc3f1d0e3b373024734fdf662e3b8ec656164ffd4b541038f97741",
+      "result": {
+        "artifacts": [],
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": true,
+            "correct_action": true,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 2109565849,
+          "expected_action": "change_policy",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "change_policy",
+          "response_sha256": "0fb589b955853a3384b77dd27b37031d31606f8fd3babce4a6ea0ed5b2bb5f66",
+          "tokens_in": 287,
+          "tokens_out": 67
+        },
+        "metrics": {
+          "policy_adherence": 0.9999999999999999
+        },
+        "passed": true,
+        "score": 0.9999999999999999,
+        "skill_invoked": true
+      },
+      "split": "development",
+      "status": "ok",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tags": [
+        "permission-failure",
+        "local-model"
+      ]
+    },
+    {
+      "arm": "baseline",
+      "case_id": "dev-no-authority",
+      "duration_ms": 1679,
+      "exit_code": 0,
+      "fixture": "experiments/procedure-promotion/fixtures/development.json",
+      "fixture_sha256": "b75a991c13bc3f1d0e3b373024734fdf662e3b8ec656164ffd4b541038f97741",
+      "result": {
+        "artifacts": [],
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": true,
+            "correct_action": true,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 1617409877,
+          "expected_action": "escalate",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "escalate",
+          "response_sha256": "5bbd3bba45b8e42ff41fa5288895f7ab8205675090f819ff04cd22b72dd49aea",
+          "tokens_in": 106,
+          "tokens_out": 54
+        },
+        "metrics": {
+          "policy_adherence": 0.9999999999999999
+        },
+        "passed": true,
+        "score": 0.9999999999999999,
+        "skill_invoked": false
+      },
+      "split": "development",
+      "status": "ok",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tags": [
+        "permission-failure",
+        "local-model"
+      ]
+    },
+    {
+      "arm": "variant",
+      "case_id": "dev-no-authority",
+      "duration_ms": 1943,
+      "exit_code": 0,
+      "fixture": "experiments/procedure-promotion/fixtures/development.json",
+      "fixture_sha256": "b75a991c13bc3f1d0e3b373024734fdf662e3b8ec656164ffd4b541038f97741",
+      "result": {
+        "artifacts": [],
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": true,
+            "correct_action": false,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 1878068670,
+          "expected_action": "escalate",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "change_target",
+          "response_sha256": "2a089784393a3bf622e202c79fda7f5c42fb32ccf66d8d1a8d5ecd7d2be6b7de",
+          "tokens_in": 283,
+          "tokens_out": 60
+        },
+        "metrics": {
+          "policy_adherence": 0.4
+        },
+        "passed": false,
+        "score": 0.4,
+        "skill_invoked": true
+      },
+      "split": "development",
+      "status": "ok",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tags": [
+        "permission-failure",
+        "local-model"
+      ]
+    }
+  ],
+  "schema": "spindle.evaluation-receipt/v2",
+  "schema_version": 1,
+  "seed": 17,
+  "skill": "repeated-permission-failure-recovery",
+  "skill_path": "experiments/procedure-promotion/SKILL.md",
+  "skill_sha256": "9061e729a5dbcf919d87b1845407681d27259a33db88c4580640d14a14824c73",
+  "split_requested": "development",
+  "summaries": {
+    "development": {
+      "cases": 3,
+      "delta": 0.033333333333333326,
+      "errors": 0,
+      "mean_score": {
+        "baseline": 0.5666666666666667,
+        "variant": 0.6
+      },
+      "runs": 6,
+      "split": "development"
+    },
+    "held_out": {
+      "cases": 0,
+      "delta": null,
+      "errors": 0,
+      "mean_score": {
+        "baseline": null,
+        "variant": null
+      },
+      "runs": 0,
+      "split": "held_out"
+    }
+  }
+}

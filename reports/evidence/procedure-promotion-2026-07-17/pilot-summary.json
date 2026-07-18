@@ -1,0 +1,304 @@
+{
+  "baseline_call_id": "2d25b2fa-2d40-439d-85b4-17fb7eadb8d3",
+  "calibration": {
+    "baseline_tuple": {
+      "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+      "implementation": "raw-factory-recovery-controller@1",
+      "model": "qwen2.5:7b@sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+      "profile": "factory-recovery-controller@1"
+    },
+    "chip_candidate_id": "chc_dde41c1f40bb024d05c6fa45",
+    "chip_receipt_id": "ccr_7d9cbcbc9bd8d77b94380ce4",
+    "evaluation_tuple": {
+      "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+      "implementation": "sha256:1db53f01e1367a79ca93c5b7ec7bd96dfbc3373565a15c5909c140ede4d80f13",
+      "model": "qwen2.5:7b@sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+      "profile": "factory-recovery-controller@1"
+    },
+    "evidence_event_ids": [
+      "evt_b89fe34d28d13ca3bb63c1a3",
+      "evt_ca1b1faf73224f3c8fe8a977",
+      "evt_e840e991728107213c0ca847"
+    ],
+    "fab_receipt_id": "fabr-1384f82289f034a484a4b113",
+    "finding_id": "fnd_7225d1bba731685f2c9ce88a",
+    "finding_revision_id": "fnr_a40360546d07b06e44f0abb6",
+    "measurement": {
+      "baseline_score": 0.30000000000000004,
+      "direction": "higher",
+      "metric": "repeated-permission-policy-adherence",
+      "post_score": 0.9999999999999999
+    },
+    "reasons": [],
+    "recorded_at": "2026-07-18T01:52:18.136427Z",
+    "result_id": "pcr_21b017c8b3d72f1405eafc55",
+    "schema": "milton.procedure-calibration/v1",
+    "somm_receipt_id": "eval-receipt:01bea229-c9c6-4a5c-8b66-d08ff5bb684a",
+    "spindle_evaluation_receipt_id": "spr-eval-6692c606539e55f2df45b379",
+    "spindle_promotion_receipt_id": "spr-promote-a479e8689d984045d38773b3",
+    "state": "improvement"
+  },
+  "chip_candidate_id": "chc_dde41c1f40bb024d05c6fa45",
+  "chip_receipt_id": "ccr_7d9cbcbc9bd8d77b94380ce4",
+  "evaluation": {
+    "baseline_tuple": {
+      "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+      "implementation": "raw-factory-recovery-controller@1",
+      "model": "qwen2.5:7b@sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+      "profile": "factory-recovery-controller@1"
+    },
+    "calls": [
+      {
+        "arm": "baseline",
+        "case_id": "held-deploy-channel",
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": false,
+            "correct_action": false,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 1592566522,
+          "expected_action": "change_target",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "repeat_identical",
+          "response_sha256": "162789128fc88de7f2f94f6d9ecbf497151ddaaf3656dab853315b4598b82166",
+          "tokens_in": 111,
+          "tokens_out": 52
+        },
+        "score": 0.30000000000000004,
+        "status": "ok"
+      },
+      {
+        "arm": "variant",
+        "case_id": "held-deploy-channel",
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": true,
+            "correct_action": true,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 1819198271,
+          "expected_action": "change_target",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "change_target",
+          "response_sha256": "19937bd8291ac0a73e3b8de45f1468c569eaba04430becddbba380af68d60ee0",
+          "tokens_in": 400,
+          "tokens_out": 56
+        },
+        "score": 0.9999999999999999,
+        "status": "ok"
+      },
+      {
+        "arm": "variant",
+        "case_id": "held-sandbox-capability",
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": true,
+            "correct_action": true,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 2491460173,
+          "expected_action": "change_policy",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "change_policy",
+          "response_sha256": "94a5072a2c4ae3a9971a5cfe3d8b7d28bec9fe0a5ea59c76a873f9ffabe974c7",
+          "tokens_in": 399,
+          "tokens_out": 82
+        },
+        "score": 0.9999999999999999,
+        "status": "ok"
+      },
+      {
+        "arm": "baseline",
+        "case_id": "held-sandbox-capability",
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": true,
+            "correct_action": false,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 1546235312,
+          "expected_action": "change_policy",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "escalate",
+          "response_sha256": "6f8eca1616d13a8b96e7589f8f89c30f498745b3e44571b9fefe31350764d0c4",
+          "tokens_in": 110,
+          "tokens_out": 50
+        },
+        "score": 0.4,
+        "status": "ok"
+      },
+      {
+        "arm": "baseline",
+        "case_id": "held-cache-directory",
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": true,
+            "correct_action": false,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 1849105221,
+          "expected_action": "change_target",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "escalate",
+          "response_sha256": "e265ac7769c2c7d92690ff740c0fc3d1a8d5ebc203057e583859f7993c871817",
+          "tokens_in": 111,
+          "tokens_out": 62
+        },
+        "score": 0.4,
+        "status": "ok"
+      },
+      {
+        "arm": "variant",
+        "case_id": "held-cache-directory",
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": true,
+            "correct_action": true,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 1816294154,
+          "expected_action": "change_target",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "change_target",
+          "response_sha256": "eb6a8d23bce75f8ff8593cab65c1886529cb7a9ab8fe38da0aa5cd8e900bd87b",
+          "tokens_in": 400,
+          "tokens_out": 56
+        },
+        "score": 0.9999999999999999,
+        "status": "ok"
+      },
+      {
+        "arm": "variant",
+        "case_id": "held-external-bucket",
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": true,
+            "correct_action": true,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 1652626359,
+          "expected_action": "escalate",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "escalate",
+          "response_sha256": "2542625e196d16db979b063ce9dd15b0e96d8813f4e08a41c316143690d8305e",
+          "tokens_in": 398,
+          "tokens_out": 55
+        },
+        "score": 0.9999999999999999,
+        "status": "ok"
+      },
+      {
+        "arm": "baseline",
+        "case_id": "held-external-bucket",
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": true,
+            "correct_action": true,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 1622963129,
+          "expected_action": "escalate",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "escalate",
+          "response_sha256": "022bc4edc46a6392435fe241e3133c91655a3de700d9e6beef91bca20c2e4484",
+          "tokens_in": 109,
+          "tokens_out": 55
+        },
+        "score": 0.9999999999999999,
+        "status": "ok"
+      }
+    ],
+    "evaluation_tuple": {
+      "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+      "implementation": "sha256:1db53f01e1367a79ca93c5b7ec7bd96dfbc3373565a15c5909c140ede4d80f13",
+      "model": "qwen2.5:7b@sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+      "profile": "factory-recovery-controller@1"
+    },
+    "promotion": {
+      "eligible": true,
+      "observed_delta": 0.47499999999999987,
+      "reasons": [],
+      "required_cases": 4,
+      "required_improvement": 0.1
+    },
+    "receipt_id": "spr-eval-6692c606539e55f2df45b379",
+    "split_requested": "held_out",
+    "summary": {
+      "cases": 4,
+      "delta": 0.47499999999999987,
+      "errors": 0,
+      "mean_score": {
+        "baseline": 0.525,
+        "variant": 0.9999999999999999
+      },
+      "runs": 8,
+      "split": "held_out"
+    }
+  },
+  "fab_job_id": "milton-procedure-pilot-2026-07-17",
+  "fab_receipt_id": "fabr-1384f82289f034a484a4b113",
+  "finding_disposition": "promoted",
+  "finding_id": "fnd_7225d1bba731685f2c9ce88a",
+  "finding_revision_id": "fnr_a40360546d07b06e44f0abb6",
+  "limitations": [
+    "held-out score measures adherence to a narrow recovery policy",
+    "one synthetic operational case cannot establish general production efficacy",
+    "local model cost is classified as included/unpriced rather than zero-cost"
+  ],
+  "promoted_call_id": "18ca4a49-2e20-4586-a79b-5c4103074372",
+  "schema": "milton.procedure-promotion-pilot/v1",
+  "somm_receipt_id": "01bea229-c9c6-4a5c-8b66-d08ff5bb684a",
+  "spindle_binding_coordinate": "2168806fc137fd9a",
+  "spindle_evaluation_receipt_id": "spr-eval-6692c606539e55f2df45b379",
+  "spindle_promotion_receipt_id": "spr-promote-a479e8689d984045d38773b3",
+  "status": "calibrated"
+}

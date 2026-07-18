@@ -1,0 +1,42 @@
+{
+  "baseline_tuple": {
+    "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+    "implementation": "raw-factory-recovery-controller@1",
+    "model": "qwen2.5:7b@sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+    "profile": "factory-recovery-controller@1"
+  },
+  "binding": {
+    "channel_versions": {
+      "milton-chip-candidate": "1"
+    },
+    "coordinate": "2168806fc137fd9a",
+    "doctrine_coordinate": "factory-recovery-doctrine@1",
+    "skills": [
+      "repeated-permission-failure-recovery"
+    ],
+    "surface": "repo:milton-procedure-pilot"
+  },
+  "decision": {
+    "eligible": true,
+    "observed_delta": 0.47499999999999987,
+    "required_improvement": 0.1
+  },
+  "evaluation_id": "repeated-permission-recovery-v1",
+  "evaluation_receipt_id": "spr-eval-6692c606539e55f2df45b379",
+  "evaluation_tuple": {
+    "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+    "implementation": "sha256:1db53f01e1367a79ca93c5b7ec7bd96dfbc3373565a15c5909c140ede4d80f13",
+    "model": "qwen2.5:7b@sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+    "profile": "factory-recovery-controller@1"
+  },
+  "origin": {
+    "chip_candidate_id": "chc_dde41c1f40bb024d05c6fa45",
+    "chip_receipt_id": "ccr_7d9cbcbc9bd8d77b94380ce4",
+    "milton_finding_id": "fnd_7225d1bba731685f2c9ce88a",
+    "milton_revision_id": "fnr_a40360546d07b06e44f0abb6",
+    "schema": "spindle.procedure-origin/v1"
+  },
+  "receipt_id": "spr-promote-a479e8689d984045d38773b3",
+  "recorded_at": "2026-07-18T01:34:25Z",
+  "schema": "spindle.procedure-promotion/v1"
+}

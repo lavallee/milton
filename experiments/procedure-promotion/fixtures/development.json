@@ -1,0 +1,32 @@
+[
+  {
+    "id": "dev-authorized-mirror",
+    "operation": "publish package to registry-primary",
+    "error": "403 policy denied",
+    "fingerprint": "sha256:dev001",
+    "identical_failures": 2,
+    "authorized_equivalent_target": "registry-approved-mirror",
+    "policy_change_authorized": true,
+    "expected_action": "change_target"
+  },
+  {
+    "id": "dev-policy-only",
+    "operation": "write generated report to protected project folder",
+    "error": "permission denied",
+    "fingerprint": "sha256:dev002",
+    "identical_failures": 2,
+    "authorized_equivalent_target": null,
+    "policy_change_authorized": true,
+    "expected_action": "change_policy"
+  },
+  {
+    "id": "dev-no-authority",
+    "operation": "read production secret",
+    "error": "access denied",
+    "fingerprint": "sha256:dev003",
+    "identical_failures": 2,
+    "authorized_equivalent_target": null,
+    "policy_change_authorized": false,
+    "expected_action": "escalate"
+  }
+]

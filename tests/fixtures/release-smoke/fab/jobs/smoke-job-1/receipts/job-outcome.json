@@ -1,0 +1,11 @@
+{
+  "attempt_id": "smoke-job-1:attempt:0",
+  "attempt_idx": 0,
+  "job_id": "smoke-job-1",
+  "kind": "job_outcome",
+  "occurred_at": "2026-07-01T10:03:00Z",
+  "outcome": {"reason": "synthetic stop", "reason_tags": [], "status": "succeeded"},
+  "receipt_id": "smoke-job-outcome",
+  "relations": [],
+  "schema": "fab.execution-receipt/v1"
+}

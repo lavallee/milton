@@ -1,0 +1,43 @@
+CREATE TABLE calls (
+  id TEXT PRIMARY KEY,
+  ts TEXT,
+  project TEXT,
+  provider TEXT,
+  model TEXT,
+  tokens_in INTEGER,
+  tokens_out INTEGER,
+  cost_usd REAL,
+  outcome TEXT,
+  correlation_id TEXT,
+  cost_basis TEXT,
+  cost_kind TEXT,
+  cost_accuracy TEXT,
+  cost_source TEXT,
+  pricing_version TEXT,
+  observation_role TEXT,
+  provider_request_id TEXT,
+  origin TEXT,
+  budget_eligible INTEGER
+);
+
+INSERT INTO calls VALUES (
+  'smoke-call-1',
+  '2026-07-01T10:01:30Z',
+  'fab',
+  'synthetic-provider',
+  'synthetic-model',
+  100,
+  20,
+  0.25,
+  'ok',
+  'smoke-job-1:attempt:0',
+  'computed',
+  'marginal',
+  'estimated',
+  'synthetic-pricing',
+  'fixture-v1',
+  'production',
+  'synthetic-request-1',
+  'native',
+  1
+);

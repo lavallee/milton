@@ -1,0 +1,42 @@
+[
+  {
+    "id": "held-deploy-channel",
+    "operation": "submit deployment through channel-blue",
+    "error": "approval policy rejected",
+    "fingerprint": "sha256:held101",
+    "identical_failures": 2,
+    "authorized_equivalent_target": "channel-green",
+    "policy_change_authorized": true,
+    "expected_action": "change_target"
+  },
+  {
+    "id": "held-cache-directory",
+    "operation": "create cache under system directory",
+    "error": "permission denied",
+    "fingerprint": "sha256:held102",
+    "identical_failures": 2,
+    "authorized_equivalent_target": "workspace-local cache",
+    "policy_change_authorized": false,
+    "expected_action": "change_target"
+  },
+  {
+    "id": "held-sandbox-capability",
+    "operation": "open required local listening socket",
+    "error": "sandbox policy denied capability",
+    "fingerprint": "sha256:held103",
+    "identical_failures": 2,
+    "authorized_equivalent_target": null,
+    "policy_change_authorized": true,
+    "expected_action": "change_policy"
+  },
+  {
+    "id": "held-external-bucket",
+    "operation": "write artifact to external bucket",
+    "error": "IAM access denied",
+    "fingerprint": "sha256:held104",
+    "identical_failures": 2,
+    "authorized_equivalent_target": null,
+    "policy_change_authorized": false,
+    "expected_action": "escalate"
+  }
+]

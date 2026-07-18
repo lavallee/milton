@@ -1,0 +1,66 @@
+{
+  "baseline": {
+    "call_id": "055fff61-68d4-4744-aa9d-83cb5127fe3a",
+    "evidence": {
+      "components": {
+        "avoids_identical_retry": false,
+        "correct_action": false,
+        "exact_fingerprint": true,
+        "specific_change": true,
+        "success_evidence": true,
+        "valid_json": true
+      },
+      "expected_action": "change_target",
+      "grader": "milton.repeated-permission-decision/v1",
+      "observed_action": "repeat_identical",
+      "response_sha256": "a08944f67a7e86683aa552ac8f7dafac81a0d745a666d3265594c2ede55bf3c6"
+    },
+    "latency_ms": 1581,
+    "model": "qwen2.5:7b",
+    "outcome": "ok",
+    "provider": "ollama",
+    "reported_cost_usd": 0.0,
+    "response_sha256": "a08944f67a7e86683aa552ac8f7dafac81a0d745a666d3265594c2ede55bf3c6",
+    "score": 0.30000000000000004,
+    "tokens_in": 114,
+    "tokens_out": 52
+  },
+  "case_id": "operational-artifact-publish",
+  "computed_cost": {
+    "reason": "no priced local resource-rate model is configured",
+    "state": "unavailable"
+  },
+  "promoted": {
+    "call_id": "855bf04f-e6c7-4f44-bede-3170983ab3f7",
+    "evidence": {
+      "components": {
+        "avoids_identical_retry": true,
+        "correct_action": true,
+        "exact_fingerprint": true,
+        "specific_change": true,
+        "success_evidence": true,
+        "valid_json": true
+      },
+      "expected_action": "change_target",
+      "grader": "milton.repeated-permission-decision/v1",
+      "observed_action": "change_target",
+      "response_sha256": "9884e834f6a0f318ea1bd70a4c827342825795a81c851b26831f000c9cdb58e6"
+    },
+    "latency_ms": 2014,
+    "model": "qwen2.5:7b",
+    "outcome": "ok",
+    "provider": "ollama",
+    "reported_cost_usd": 0.0,
+    "response_sha256": "9884e834f6a0f318ea1bd70a4c827342825795a81c851b26831f000c9cdb58e6",
+    "score": 0.9999999999999999,
+    "tokens_in": 403,
+    "tokens_out": 62
+  },
+  "reported_cost": {
+    "baseline_usd": 0.0,
+    "interpretation": "local-included-unpriced",
+    "promoted_usd": 0.0,
+    "source": "somm-call-telemetry"
+  },
+  "schema": "milton.procedure-operational-comparison/v1"
+}

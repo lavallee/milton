@@ -1,0 +1,433 @@
+{
+  "baseline_tuple": {
+    "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+    "implementation": "raw-factory-recovery-controller@1",
+    "model": "qwen2.5:7b@sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+    "profile": "factory-recovery-controller@1"
+  },
+  "created_at": "2026-07-18T01:34:25.666484+00:00",
+  "dimensions": {
+    "baseline_implementation": "raw-factory-recovery-controller@1",
+    "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+    "model": "qwen2.5:7b@sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+    "profile": "factory-recovery-controller@1"
+  },
+  "evaluation_id": "repeated-permission-recovery-v1",
+  "evaluation_tuple": {
+    "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+    "implementation": "sha256:1db53f01e1367a79ca93c5b7ec7bd96dfbc3373565a15c5909c140ede4d80f13",
+    "model": "qwen2.5:7b@sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+    "profile": "factory-recovery-controller@1"
+  },
+  "manifest": "reports/evidence/procedure-promotion-2026-07-17/evaluation.toml",
+  "manifest_sha256": "2816c1791917a2f4ff6f5e228676e7d177d541e877bcea7c387502e4f18c4ece",
+  "origin": {
+    "chip_candidate_id": "chc_dde41c1f40bb024d05c6fa45",
+    "chip_receipt_id": "ccr_7d9cbcbc9bd8d77b94380ce4",
+    "milton_finding_id": "fnd_7225d1bba731685f2c9ce88a",
+    "milton_revision_id": "fnr_a40360546d07b06e44f0abb6",
+    "schema": "spindle.procedure-origin/v1"
+  },
+  "promotion": {
+    "eligible": true,
+    "observed_delta": 0.47499999999999987,
+    "reasons": [],
+    "required_cases": 4,
+    "required_improvement": 0.1
+  },
+  "receipt_id": "spr-eval-6692c606539e55f2df45b379",
+  "run_id": "20260718T013410759447Z",
+  "runs": [
+    {
+      "arm": "baseline",
+      "case_id": "held-deploy-channel",
+      "duration_ms": 1656,
+      "exit_code": 0,
+      "fixture": "experiments/procedure-promotion/fixtures/heldout.json",
+      "fixture_sha256": "bad2822bfcb0bc4b1d8ec29a1746d834c81ad759f0e27a03e8f60a8efbc582e2",
+      "result": {
+        "artifacts": [],
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": false,
+            "correct_action": false,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 1592566522,
+          "expected_action": "change_target",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "repeat_identical",
+          "response_sha256": "162789128fc88de7f2f94f6d9ecbf497151ddaaf3656dab853315b4598b82166",
+          "tokens_in": 111,
+          "tokens_out": 52
+        },
+        "metrics": {
+          "policy_adherence": 0.30000000000000004
+        },
+        "passed": false,
+        "score": 0.30000000000000004,
+        "skill_invoked": false
+      },
+      "split": "held_out",
+      "status": "ok",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tags": [
+        "permission-failure",
+        "local-model"
+      ]
+    },
+    {
+      "arm": "variant",
+      "case_id": "held-deploy-channel",
+      "duration_ms": 1885,
+      "exit_code": 0,
+      "fixture": "experiments/procedure-promotion/fixtures/heldout.json",
+      "fixture_sha256": "bad2822bfcb0bc4b1d8ec29a1746d834c81ad759f0e27a03e8f60a8efbc582e2",
+      "result": {
+        "artifacts": [],
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": true,
+            "correct_action": true,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 1819198271,
+          "expected_action": "change_target",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "change_target",
+          "response_sha256": "19937bd8291ac0a73e3b8de45f1468c569eaba04430becddbba380af68d60ee0",
+          "tokens_in": 400,
+          "tokens_out": 56
+        },
+        "metrics": {
+          "policy_adherence": 0.9999999999999999
+        },
+        "passed": true,
+        "score": 0.9999999999999999,
+        "skill_invoked": true
+      },
+      "split": "held_out",
+      "status": "ok",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tags": [
+        "permission-failure",
+        "local-model"
+      ]
+    },
+    {
+      "arm": "variant",
+      "case_id": "held-sandbox-capability",
+      "duration_ms": 2556,
+      "exit_code": 0,
+      "fixture": "experiments/procedure-promotion/fixtures/heldout.json",
+      "fixture_sha256": "bad2822bfcb0bc4b1d8ec29a1746d834c81ad759f0e27a03e8f60a8efbc582e2",
+      "result": {
+        "artifacts": [],
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": true,
+            "correct_action": true,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 2491460173,
+          "expected_action": "change_policy",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "change_policy",
+          "response_sha256": "94a5072a2c4ae3a9971a5cfe3d8b7d28bec9fe0a5ea59c76a873f9ffabe974c7",
+          "tokens_in": 399,
+          "tokens_out": 82
+        },
+        "metrics": {
+          "policy_adherence": 0.9999999999999999
+        },
+        "passed": true,
+        "score": 0.9999999999999999,
+        "skill_invoked": true
+      },
+      "split": "held_out",
+      "status": "ok",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tags": [
+        "permission-failure",
+        "local-model"
+      ]
+    },
+    {
+      "arm": "baseline",
+      "case_id": "held-sandbox-capability",
+      "duration_ms": 1609,
+      "exit_code": 0,
+      "fixture": "experiments/procedure-promotion/fixtures/heldout.json",
+      "fixture_sha256": "bad2822bfcb0bc4b1d8ec29a1746d834c81ad759f0e27a03e8f60a8efbc582e2",
+      "result": {
+        "artifacts": [],
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": true,
+            "correct_action": false,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 1546235312,
+          "expected_action": "change_policy",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "escalate",
+          "response_sha256": "6f8eca1616d13a8b96e7589f8f89c30f498745b3e44571b9fefe31350764d0c4",
+          "tokens_in": 110,
+          "tokens_out": 50
+        },
+        "metrics": {
+          "policy_adherence": 0.4
+        },
+        "passed": false,
+        "score": 0.4,
+        "skill_invoked": false
+      },
+      "split": "held_out",
+      "status": "ok",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tags": [
+        "permission-failure",
+        "local-model"
+      ]
+    },
+    {
+      "arm": "baseline",
+      "case_id": "held-cache-directory",
+      "duration_ms": 1914,
+      "exit_code": 0,
+      "fixture": "experiments/procedure-promotion/fixtures/heldout.json",
+      "fixture_sha256": "bad2822bfcb0bc4b1d8ec29a1746d834c81ad759f0e27a03e8f60a8efbc582e2",
+      "result": {
+        "artifacts": [],
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": true,
+            "correct_action": false,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 1849105221,
+          "expected_action": "change_target",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "escalate",
+          "response_sha256": "e265ac7769c2c7d92690ff740c0fc3d1a8d5ebc203057e583859f7993c871817",
+          "tokens_in": 111,
+          "tokens_out": 62
+        },
+        "metrics": {
+          "policy_adherence": 0.4
+        },
+        "passed": false,
+        "score": 0.4,
+        "skill_invoked": false
+      },
+      "split": "held_out",
+      "status": "ok",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tags": [
+        "permission-failure",
+        "local-model"
+      ]
+    },
+    {
+      "arm": "variant",
+      "case_id": "held-cache-directory",
+      "duration_ms": 1879,
+      "exit_code": 0,
+      "fixture": "experiments/procedure-promotion/fixtures/heldout.json",
+      "fixture_sha256": "bad2822bfcb0bc4b1d8ec29a1746d834c81ad759f0e27a03e8f60a8efbc582e2",
+      "result": {
+        "artifacts": [],
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": true,
+            "correct_action": true,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 1816294154,
+          "expected_action": "change_target",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "change_target",
+          "response_sha256": "eb6a8d23bce75f8ff8593cab65c1886529cb7a9ab8fe38da0aa5cd8e900bd87b",
+          "tokens_in": 400,
+          "tokens_out": 56
+        },
+        "metrics": {
+          "policy_adherence": 0.9999999999999999
+        },
+        "passed": true,
+        "score": 0.9999999999999999,
+        "skill_invoked": true
+      },
+      "split": "held_out",
+      "status": "ok",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tags": [
+        "permission-failure",
+        "local-model"
+      ]
+    },
+    {
+      "arm": "variant",
+      "case_id": "held-external-bucket",
+      "duration_ms": 1717,
+      "exit_code": 0,
+      "fixture": "experiments/procedure-promotion/fixtures/heldout.json",
+      "fixture_sha256": "bad2822bfcb0bc4b1d8ec29a1746d834c81ad759f0e27a03e8f60a8efbc582e2",
+      "result": {
+        "artifacts": [],
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": true,
+            "correct_action": true,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 1652626359,
+          "expected_action": "escalate",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "escalate",
+          "response_sha256": "2542625e196d16db979b063ce9dd15b0e96d8813f4e08a41c316143690d8305e",
+          "tokens_in": 398,
+          "tokens_out": 55
+        },
+        "metrics": {
+          "policy_adherence": 0.9999999999999999
+        },
+        "passed": true,
+        "score": 0.9999999999999999,
+        "skill_invoked": true
+      },
+      "split": "held_out",
+      "status": "ok",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tags": [
+        "permission-failure",
+        "local-model"
+      ]
+    },
+    {
+      "arm": "baseline",
+      "case_id": "held-external-bucket",
+      "duration_ms": 1686,
+      "exit_code": 0,
+      "fixture": "experiments/procedure-promotion/fixtures/heldout.json",
+      "fixture_sha256": "bad2822bfcb0bc4b1d8ec29a1746d834c81ad759f0e27a03e8f60a8efbc582e2",
+      "result": {
+        "artifacts": [],
+        "evidence": {
+          "components": {
+            "avoids_identical_retry": true,
+            "correct_action": true,
+            "exact_fingerprint": true,
+            "specific_change": true,
+            "success_evidence": true,
+            "valid_json": true
+          },
+          "duration_ns": 1622963129,
+          "expected_action": "escalate",
+          "grader": "milton.repeated-permission-decision/v1",
+          "harness": "ollama-chat/v1;temperature=0;num_predict=1024;format=decision-schema-v1",
+          "model": "qwen2.5:7b",
+          "model_blob": "sha256:2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730",
+          "observed_action": "escalate",
+          "response_sha256": "022bc4edc46a6392435fe241e3133c91655a3de700d9e6beef91bca20c2e4484",
+          "tokens_in": 109,
+          "tokens_out": 55
+        },
+        "metrics": {
+          "policy_adherence": 0.9999999999999999
+        },
+        "passed": true,
+        "score": 0.9999999999999999,
+        "skill_invoked": false
+      },
+      "split": "held_out",
+      "status": "ok",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tags": [
+        "permission-failure",
+        "local-model"
+      ]
+    }
+  ],
+  "schema": "spindle.evaluation-receipt/v2",
+  "schema_version": 1,
+  "seed": 17,
+  "skill": "repeated-permission-failure-recovery",
+  "skill_path": "experiments/procedure-promotion/SKILL.md",
+  "skill_sha256": "1db53f01e1367a79ca93c5b7ec7bd96dfbc3373565a15c5909c140ede4d80f13",
+  "split_requested": "held_out",
+  "summaries": {
+    "development": {
+      "cases": 0,
+      "delta": null,
+      "errors": 0,
+      "mean_score": {
+        "baseline": null,
+        "variant": null
+      },
+      "runs": 0,
+      "split": "development"
+    },
+    "held_out": {
+      "cases": 4,
+      "delta": 0.47499999999999987,
+      "errors": 0,
+      "mean_score": {
+        "baseline": 0.525,
+        "variant": 0.9999999999999999
+      },
+      "runs": 8,
+      "split": "held_out"
+    }
+  }
+}

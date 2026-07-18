@@ -1,0 +1,23 @@
+{
+  "accounting": {
+    "child_accounting_keys": [],
+    "counting": false,
+    "observation_role": "rollup"
+  },
+  "attempt_id": "smoke-job-1:attempt:0",
+  "attempt_idx": 0,
+  "backend": "somm",
+  "correlation_id": "smoke-job-1:attempt:0",
+  "job_id": "smoke-job-1",
+  "kind": "attempt_started",
+  "occurred_at": "2026-07-01T10:01:00Z",
+  "receipt_id": "smoke-attempt-started",
+  "relations": [
+    {
+      "object": {"namespace": "fab.job", "value": "smoke-job-1"},
+      "predicate": "attempt_of",
+      "subject": {"namespace": "fab.attempt", "value": "smoke-job-1:attempt:0"}
+    }
+  ],
+  "schema": "fab.execution-receipt/v1"
+}

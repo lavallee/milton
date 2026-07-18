@@ -1,0 +1,140 @@
+{
+  "accounting": {
+    "amounts_usd": {
+      "by_basis": {
+        "computed": "0.25",
+        "reported": "0",
+        "unknown": "0"
+      },
+      "by_kind": {
+        "included": "0",
+        "marginal": "0.25",
+        "notional": "0",
+        "unknown": "0"
+      },
+      "raw_observed": "0.25",
+      "selected_observations": "0.25",
+      "suppressed_exact_duplicates": "0.00"
+    },
+    "key_coverage": {
+      "shared": 1,
+      "source_local": 0,
+      "unknown_or_missing": 0
+    },
+    "observations": {
+      "amount_unavailable": 0,
+      "cost_events": 3,
+      "excluded_rollups": 2,
+      "selected": 1,
+      "suppressed_exact_duplicates": 0,
+      "with_amount": 1
+    }
+  },
+  "attribution": {
+    "amounts_usd": {
+      "ambiguous": "0",
+      "attributed": "0.25",
+      "selected_total": "0.25",
+      "unallocated": "0"
+    },
+    "conservation": {
+      "formula": "selected_total = attributed + ambiguous + unallocated",
+      "satisfied": true
+    },
+    "denominators": {
+      "fab.job": {
+        "attributed_usd": "0.25",
+        "cost_per_outcome_usd": "0.25",
+        "outcomes": 1
+      }
+    },
+    "records": [
+      {
+        "accounting_key": "provider.request=synthetic-provider:synthetic-request-1",
+        "accounting_key_scope": "shared",
+        "accuracy": "estimated",
+        "amount_usd": "0.25",
+        "basis": "computed",
+        "economic_kind": "marginal",
+        "outcome": {
+          "outcome_type": "fab.job",
+          "reference": {
+            "namespace": "fab.job",
+            "value": "smoke-job-1"
+          },
+          "status": "succeeded"
+        },
+        "path": [
+          {
+            "direction": "reverse",
+            "predicate": "produced",
+            "source": {
+              "namespace": "somm.call",
+              "value": "smoke-call-1"
+            },
+            "target": {
+              "namespace": "fab.attempt",
+              "value": "smoke-job-1:attempt:0"
+            }
+          },
+          {
+            "direction": "forward",
+            "predicate": "attempt_of",
+            "source": {
+              "namespace": "fab.attempt",
+              "value": "smoke-job-1:attempt:0"
+            },
+            "target": {
+              "namespace": "fab.job",
+              "value": "smoke-job-1"
+            }
+          }
+        ],
+        "reason": "exact-directed-path",
+        "state": "attributed"
+      }
+    ]
+  },
+  "findings": {
+    "current": [
+      {
+        "finding_id": "fnd_bdce843ebb6458e86a2f2d0e",
+        "generator": "milton.george-gates/v1",
+        "grade": "lead",
+        "kind": "failure-motif",
+        "subject": "re-minted:context=release-smoke-gate"
+      }
+    ],
+    "first_emission": {
+      "candidates": 1,
+      "inserted": 1,
+      "replayed": 0
+    },
+    "replay_emission": {
+      "candidates": 1,
+      "inserted": 0,
+      "replayed": 1
+    },
+    "surface_rules": [
+      "re-minted"
+    ]
+  },
+  "ingestion": {
+    "fab": {
+      "events": 5,
+      "relations": 3,
+      "sources_failed": 0
+    },
+    "george": {
+      "events": 6,
+      "relations": 4,
+      "sources_failed": 0
+    },
+    "somm": {
+      "events": 2,
+      "relations": 0,
+      "sources_failed": 0
+    }
+  },
+  "schema": "milton.release-smoke/v1"
+}

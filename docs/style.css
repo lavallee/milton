@@ -1,0 +1,99 @@
+:root {
+  color-scheme: light;
+  --ink: #182018;
+  --muted: #59645a;
+  --paper: #f4f0e7;
+  --panel: #fffdf7;
+  --line: #c9c4b7;
+  --accent: #315c43;
+  --accent-soft: #dbe8dc;
+  --code: #202820;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.55;
+}
+
+main {
+  width: min(1040px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 4rem 0 5rem;
+}
+
+.eyebrow, h2, code, pre, .status {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+h1 {
+  max-width: 800px;
+  margin: .3rem 0 1rem;
+  font-size: clamp(3rem, 9vw, 6.5rem);
+  font-weight: 500;
+  letter-spacing: -.055em;
+  line-height: .92;
+}
+
+.lede {
+  max-width: 760px;
+  color: var(--muted);
+  font-size: clamp(1.15rem, 2.5vw, 1.55rem);
+}
+
+.actions { display: flex; flex-wrap: wrap; gap: .8rem; margin: 2rem 0 3rem; }
+.actions a {
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  padding: .65rem .9rem;
+  text-decoration: none;
+}
+.actions a:first-child { background: var(--ink); color: var(--paper); }
+
+.terminal {
+  overflow-x: auto;
+  border-radius: 4px;
+  background: var(--code);
+  color: #eaf1e8;
+  padding: 1.25rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1px;
+  margin: 3rem 0;
+  border: 1px solid var(--line);
+  background: var(--line);
+}
+
+.grid article { background: var(--panel); padding: 1.35rem; }
+.grid h2 { margin-top: 0; font-size: .95rem; }
+.grid p { color: var(--muted); }
+
+.principle {
+  border-left: 5px solid var(--accent);
+  background: var(--accent-soft);
+  margin: 3rem 0;
+  padding: 1.2rem 1.5rem;
+}
+
+.status { border-top: 1px solid var(--line); margin-top: 3rem; padding-top: 1.5rem; }
+.status strong { color: var(--accent); }
+
+@media (max-width: 600px) {
+  main { padding-top: 2rem; }
+  h1 { font-size: 3.6rem; }
+}

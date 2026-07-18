@@ -1,0 +1,81 @@
+{
+  "baseline": {
+    "call_id": "2d25b2fa-2d40-439d-85b4-17fb7eadb8d3",
+    "cost_observation": {
+      "accuracy": "unknown",
+      "amount_usd": null,
+      "basis": "unknown",
+      "kind": "included",
+      "pricing_version": null,
+      "source": "local-included-unpriced"
+    },
+    "evidence": {
+      "components": {
+        "avoids_identical_retry": false,
+        "correct_action": false,
+        "exact_fingerprint": true,
+        "specific_change": true,
+        "success_evidence": true,
+        "valid_json": true
+      },
+      "expected_action": "change_target",
+      "grader": "milton.repeated-permission-decision/v1",
+      "observed_action": "repeat_identical",
+      "response_sha256": "a08944f67a7e86683aa552ac8f7dafac81a0d745a666d3265594c2ede55bf3c6"
+    },
+    "latency_ms": 5374,
+    "model": "qwen2.5:7b",
+    "outcome": "ok",
+    "provider": "ollama",
+    "response_sha256": "a08944f67a7e86683aa552ac8f7dafac81a0d745a666d3265594c2ede55bf3c6",
+    "score": 0.30000000000000004,
+    "tokens_in": 114,
+    "tokens_out": 52
+  },
+  "case_id": "operational-artifact-publish",
+  "computed_cost": {
+    "reason": "no local electricity, hardware, or opportunity-cost rate is configured",
+    "state": "unavailable"
+  },
+  "economic_kind": "included",
+  "producer_sentinel_interpretation": "compatibility field; not an economic zero",
+  "producer_sentinel_usd": 0.0,
+  "promoted": {
+    "call_id": "18ca4a49-2e20-4586-a79b-5c4103074372",
+    "cost_observation": {
+      "accuracy": "unknown",
+      "amount_usd": null,
+      "basis": "unknown",
+      "kind": "included",
+      "pricing_version": null,
+      "source": "local-included-unpriced"
+    },
+    "evidence": {
+      "components": {
+        "avoids_identical_retry": true,
+        "correct_action": true,
+        "exact_fingerprint": true,
+        "specific_change": true,
+        "success_evidence": true,
+        "valid_json": true
+      },
+      "expected_action": "change_target",
+      "grader": "milton.repeated-permission-decision/v1",
+      "observed_action": "change_target",
+      "response_sha256": "9884e834f6a0f318ea1bd70a4c827342825795a81c851b26831f000c9cdb58e6"
+    },
+    "latency_ms": 2058,
+    "model": "qwen2.5:7b",
+    "outcome": "ok",
+    "provider": "ollama",
+    "response_sha256": "9884e834f6a0f318ea1bd70a4c827342825795a81c851b26831f000c9cdb58e6",
+    "score": 0.9999999999999999,
+    "tokens_in": 403,
+    "tokens_out": 62
+  },
+  "reported_cost": {
+    "reason": "Ollama emitted no provider invoice or reported dollar amount",
+    "state": "unavailable"
+  },
+  "schema": "milton.procedure-operational-comparison/v1"
+}
