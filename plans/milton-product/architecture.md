@@ -49,7 +49,7 @@ call ledger and non-idempotent OTLP round trips.
 | CLI | `argparse`, JSON/text projections | Existing dependency-free contract |
 | Model seam | Protocol/subprocess or optional Somm client extra | Keeps deterministic core and hot paths cycle-free |
 | Tests | pytest, host-shaped fixtures, live bounded audits | Seam failures matter more than isolated algorithms |
-| Distribution | hatchling/uv, PyPI package `milton-agents` | Existing family convention |
+| Distribution | hatchling/uv, PyPI package `milton-ai` | Broad AI-accounting scope; `milton` import retained |
 
 ## System Architecture
 

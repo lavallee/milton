@@ -68,8 +68,10 @@ live/host-shaped checkpoints are accepted. Bounded failure-motif synthesis,
 two-store memory auditing, idempotent procedure-candidate export, and one
 evaluated/bound/post-measured procedure calibration loop are implemented.
 
-The package is configured as `milton-agents` (the bare name is taken; import
-package is `milton`) and builds locally. The Forge OSS release shape, trusted
+The distribution is `milton-ai` (the bare name belongs to an unrelated project;
+the import package and CLI remain `milton`). The broader distribution name
+reflects that Milton can account for gateway, provider, and other AI work—not
+only work performed by agents. The Forge OSS release shape, trusted
 publishing workflow, and retained clean-wheel smoke are present; the first OIDC
 publish and post-publish install remain external release proofs. Milton requires
 Python 3.12 or newer and its core has no runtime dependencies.
@@ -152,7 +154,7 @@ uv run ruff format --check .
 uv run mypy --strict src tests
 uv run pytest
 uv build
-uv run python scripts/release_smoke.py dist/milton_agents-*.whl
+uv run python scripts/release_smoke.py dist/milton_ai-*.whl
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for evidence-contract expectations and

@@ -15,7 +15,7 @@ a minor release for backward-compatible CLI, adapter, or library additions; and
 a major release for breaking CLI flags, schemas, precedence, threshold, or
 economic-semantics changes. Call out load-bearing threshold changes explicitly.
 
-The distribution name is `milton-agents`; the import package and CLI are both
+The distribution name is `milton-ai`; the import package and CLI are both
 `milton`.
 
 ## Release checklist
@@ -32,7 +32,7 @@ The distribution name is `milton-agents`; the import package and CLI are both
    uv run mypy --strict src tests scripts
    uv run pytest -q
    uv build
-   uv run python scripts/release_smoke.py dist/milton_agents-*.whl
+   uv run python scripts/release_smoke.py dist/milton_ai-*.whl
    uvx --from pip-audit pip-audit . --strict --disable-pip
    uvx --from zizmor zizmor .github/workflows --offline \
      --min-severity high --min-confidence high
@@ -54,7 +54,7 @@ The distribution name is `milton-agents`; the import package and CLI are both
 
 8. Create a focused GitHub release with a compare link. Publishing the release
    triggers `.github/workflows/publish.yml`.
-9. Verify the trusted-publishing job, then install `milton-agents==X.Y.Z` in a
+9. Verify the trusted-publishing job, then install `milton-ai==X.Y.Z` in a
    new environment and rerun the fixture smoke against that installed artifact.
 10. Verify the GitHub Pages landing page reports the released version.
 
@@ -65,8 +65,8 @@ Before the first release, register a pending PyPI trusted publisher for:
 - owner: `lavallee`
 - repository: `milton`
 - workflow: `publish.yml`
-- environment: `pypi-milton-agents`
-- project: `milton-agents`
+- environment: `pypi-milton-ai`
+- project: `milton-ai`
 
 The workflow uses GitHub OIDC and stores no PyPI token. The manual fallback is
 `uv build && uv publish`, which requires an explicitly supplied PyPI credential.

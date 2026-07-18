@@ -18,7 +18,7 @@ phase is not considered complete because its types or storage exist.
 
 Family-standard shape (the somm/chip pattern):
 
-- `milton-agents` configured for PyPI, import package `milton`, src layout,
+- `milton-ai` configured for PyPI, import package `milton`, src layout,
   hatchling, MIT, Python ≥3.12. The OIDC workflow and clean-wheel smoke are
   present; the first trusted-publishing run remains a release gate.
 - **Light dependency-free core and built-ins.** Core = the normalized event model, the

@@ -20,7 +20,7 @@ uv build
 
 The default package has no runtime dependencies. Keep optional, network-bound,
 or heavyweight integrations behind adapter seams; the local deterministic path
-must continue to work after `pip install milton-agents` alone.
+must continue to work after `pip install milton-ai` alone.
 
 ## Evidence contracts
 
@@ -51,7 +51,7 @@ accounting, attribution, and finding manifests:
 
 ```console
 uv build
-uv run python scripts/release_smoke.py dist/milton_agents-*.whl
+uv run python scripts/release_smoke.py dist/milton_ai-*.whl
 ```
 
 Update the expected manifest only when an intentional contract change has been

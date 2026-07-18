@@ -1,7 +1,7 @@
 [project]
-name = "milton-agents"
+name = "milton-ai"
 version = "0.1.0"
-description = "Local-first retrospective analysis for LLM agent exhaust"
+description = "Local-first accounting, traceability, and outcome analysis for AI work"
 requires-python = ">=3.12"
 license = { text = "MIT" }
 readme = "README.md"

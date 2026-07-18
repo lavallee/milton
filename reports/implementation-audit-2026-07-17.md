@@ -36,8 +36,8 @@ The full A-4.6 coordinate chain and accounting interpretation are in
 
 Across the six repositories, 3,596 tests passed and seven optional tests were
 skipped. The Milton package built as both
-`dist/milton_agents-0.1.0.tar.gz` and
-`dist/milton_agents-0.1.0-py3-none-any.whl`.
+`dist/milton_ai-0.1.0.tar.gz` and
+`dist/milton_ai-0.1.0-py3-none-any.whl`.
 
 Spindle's repository-wide Ruff and mypy baselines are not globally green
 outside the changed evaluation/binding surface (38 lint findings and 11 typing

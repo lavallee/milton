@@ -9,8 +9,8 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     environment:
-      name: pypi-milton-agents
-      url: https://pypi.org/p/milton-agents
+      name: pypi-milton-ai
+      url: https://pypi.org/p/milton-ai
     permissions:
       id-token: write
     steps:
@@ -32,8 +32,8 @@ jobs:
       - name: Build distributions
         run: uv build
       - name: Verify clean wheel install
-        run: uv run python scripts/release_smoke.py dist/milton_agents-*.whl
-      - name: Publish milton-agents
+        run: uv run python scripts/release_smoke.py dist/milton_ai-*.whl
+      - name: Publish milton-ai
         uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # release/v1
         with:
           packages-dir: dist/

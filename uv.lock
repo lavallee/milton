@@ -128,7 +128,7 @@ wheels = [
 ]
 
 [[package]]
-name = "milton-agents"
+name = "milton-ai"
 version = "0.1.0"
 source = { editable = "." }
 

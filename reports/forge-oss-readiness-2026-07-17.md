@@ -15,7 +15,7 @@ Fab disposition described below.
 - The private public-source scrub returns no incidental internal-tool matches.
 - `CONTRIBUTING.md`, `RELEASING.md`, `docs/index.html`, `docs/.nojekyll`, and the
   Pages stylesheet are present.
-- `milton-agents` is the distribution name; `milton` remains the import and CLI.
+- `milton-ai` is the distribution name; `milton` remains the import and CLI.
 
 ## Reproducible release proof
 
@@ -55,9 +55,9 @@ The expected projection is retained at
    direction. Before release, either publish Fab after its receipt changes land
    or record an explicit doctrine revision that permits this public contract.
 2. The review branch must pass GitHub Actions from a committed tree.
-3. Register the pending PyPI trusted publisher for project `milton-agents`,
+3. Register the pending PyPI trusted publisher for project `milton-ai`,
    repository `lavallee/milton`, workflow `publish.yml`, environment
-   `pypi-milton-agents`.
+   `pypi-milton-ai`.
 4. Merge, create a clean annotated `v0.1.0` tag and GitHub release, and observe
    the OIDC publish job succeed.
 5. Install the published artifact in a new environment and rerun the retained
