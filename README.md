@@ -72,9 +72,9 @@ The distribution is `milton-ai` (the bare name belongs to an unrelated project;
 the import package and CLI remain `milton`). The broader distribution name
 reflects that Milton can account for gateway, provider, and other AI work—not
 only work performed by agents. The Forge OSS release shape, trusted
-publishing workflow, and retained clean-wheel smoke are present; the first OIDC
-publish and post-publish install remain external release proofs. Milton requires
-Python 3.12 or newer and its core has no runtime dependencies.
+publishing workflow, and retained clean-wheel smoke are present; tagged GitHub
+releases publish to PyPI through OIDC. Milton requires Python 3.12 or newer and
+its core has no runtime dependencies.
 
 The standing direction is [VISION.md](VISION.md), the gated sequence is
 [ROADMAP.md](ROADMAP.md), and the Forge-derived executable plan lives under
@@ -185,8 +185,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for evidence-contract expectations and
   on Spindle's behalf. The retained local-model checkpoint closes one such
   chain with an explicitly narrow policy-adherence claim; see
   [the procedure-promotion pilot](reports/procedure-promotion-pilot-2026-07-17.md).
-- fab (being open-sourced) — the reference runner whose receipts are a
-  first-class adapter.
+- Fab — an optional first-party receipt producer and reference runner. Milton
+  reads its self-contained receipt contract without importing or requiring
+  Fab; Fab may be unavailable or private without affecting installation or
+  default operation.
 
 ## License
 

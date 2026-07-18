@@ -174,6 +174,12 @@ hypotheses into graded findings and provide the outcome side of
 cost-per-outcome. Fab is the reference adapter; the receipt reader is
 format-driven so other runners can implement the same surface.
 
+Dependency direction is explicit: Milton does not install or import Fab. The
+adapter is implemented entirely from Milton's public receipt contract and
+standard-library readers. Fab can adopt and emit that contract, but its source
+availability does not gate Milton installation, tests, or default operation;
+missing Fab receipts are a declared coverage gap.
+
 Fab may retain cost rollups for operator convenience only when they reference
 their child Somm/provider accounting keys and are typed as rollups. A rollup
 without child keys remains a non-counting outcome observation. The stable
