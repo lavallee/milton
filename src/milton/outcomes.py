@@ -18,13 +18,14 @@ from milton.model import (
     NormalizedEvent,
     OutcomePayload,
 )
-from milton.relations import RelationKind, RelationRecord, TypedRef
+from milton.relations import RelationKind, RelationMethod, RelationRecord, TypedRef
 
 OUTCOME_PRECEDENCE: tuple[str, ...] = (
     "git.commit",
     "george.entry",
     "fab.job",
     "fab.attempt",
+    "barnowl.research-outcome",
 )
 
 
@@ -326,7 +327,9 @@ def build_outcome_attribution(
         raise ValidationError(f"unsupported outcome types: {sorted(unknown_types)}")
 
     candidates = _outcome_candidates(all_events, set(allowed_types))
-    graph = _build_graph(tuple(crosswalks), tuple(relations), all_events)
+    current_relations = tuple(relations)
+    graph = _build_graph(tuple(crosswalks), current_relations, all_events)
+    barnowl_receipt_walks = _barnowl_receipt_walks(current_relations)
     records: list[OutcomeAttributionRecord] = []
     for cost in sorted(selected_costs, key=lambda item: (item.occurred_at, item.event_id)):
         roots, lineage_event_ids = _cost_roots(cost, by_id)
@@ -337,6 +340,8 @@ def build_outcome_attribution(
                 lineage_event_ids,
                 candidates,
                 graph,
+                exact_somm_call_root=_exact_somm_call_root(cost, by_id),
+                barnowl_receipt_walks=barnowl_receipt_walks,
                 max_depth=max_depth,
             )
         )
@@ -373,6 +378,8 @@ def _attribute_cost(
     candidates: tuple[OutcomeCandidate, ...],
     graph: dict[TypedRef, tuple[_Edge, ...]],
     *,
+    exact_somm_call_root: TypedRef | None,
+    barnowl_receipt_walks: dict[tuple[TypedRef, TypedRef], tuple[_Walk, ...]],
     max_depth: int,
 ) -> OutcomeAttributionRecord:
     payload = cost.payload
@@ -388,9 +395,22 @@ def _attribute_cost(
     walks = _walk_graph(roots, graph, max_depth=max_depth)
     candidate_paths: list[CandidatePath] = []
     for candidate in candidates:
-        relation_walk = walks.get((candidate.reference, True))
+        relation_walk: _Walk | None
+        if candidate.outcome_type == "barnowl.research-outcome":
+            relation_walk = _exact_barnowl_receipt_walk(
+                exact_somm_call_root,
+                candidate,
+                barnowl_receipt_walks,
+            )
+        else:
+            relation_walk = walks.get((candidate.reference, True))
         association_walk = walks.get((candidate.reference, False))
         walk = relation_walk or association_walk
+        if walk is None and candidate.outcome_type == "barnowl.research-outcome":
+            # Retain a relation-bearing graph path as diagnostic evidence, but
+            # never let it qualify a Barnowl outcome. Only the exact direct
+            # receipt walk above is eligible for this outcome type.
+            walk = walks.get((candidate.reference, True))
         if walk is None:
             continue
         candidate_paths.append(
@@ -530,6 +550,12 @@ def _candidate_ref(event: NormalizedEvent, payload: OutcomePayload) -> tuple[str
         return "fab.job", TypedRef("fab.job", payload.reference)
     if payload.outcome_type == "fab.attempt":
         return "fab.attempt", TypedRef("fab.attempt", event.source.native_id)
+    if (
+        event.source.adapter == "barnowl-research-outcome"
+        and payload.outcome_type == "barnowl.research-outcome"
+        and payload.reference
+    ):
+        return payload.outcome_type, TypedRef(payload.outcome_type, payload.reference)
     return None
 
 
@@ -692,6 +718,60 @@ def _relation_supports_attribution(relation: RelationRecord) -> bool:
     return False
 
 
+def _barnowl_receipt_walks(
+    relations: tuple[RelationRecord, ...],
+) -> dict[tuple[TypedRef, TypedRef], tuple[_Walk, ...]]:
+    """Index only direct, receipt-authored Somm call -> Barnowl outcome edges."""
+
+    indexed: dict[tuple[TypedRef, TypedRef], list[_Walk]] = {}
+    for relation in relations:
+        if not (
+            relation.predicate is RelationKind.PRODUCED
+            and relation.method is RelationMethod.SOURCE_RECEIPT
+            and relation.subject.namespace == "somm.call"
+            and relation.object.namespace == "barnowl.research-outcome"
+        ):
+            continue
+        step = PathStep(
+            PathStepKind.RELATION,
+            relation.subject,
+            relation.object,
+            relation.relation_id,
+            relation.record_id,
+            relation.predicate.value,
+            "forward",
+            relation.evidence_event_ids,
+        )
+        indexed.setdefault((relation.subject, relation.object), []).append(
+            _Walk((relation.subject, relation.object), (step,), True)
+        )
+    return {
+        endpoints: tuple(
+            sorted(
+                walks,
+                key=lambda walk: (
+                    walk.steps[0].edge_id,
+                    walk.steps[0].revision_id or "",
+                ),
+            )
+        )
+        for endpoints, walks in indexed.items()
+    }
+
+
+def _exact_barnowl_receipt_walk(
+    exact_somm_call_root: TypedRef | None,
+    candidate: OutcomeCandidate,
+    receipt_walks: dict[tuple[TypedRef, TypedRef], tuple[_Walk, ...]],
+) -> _Walk | None:
+    if exact_somm_call_root is None:
+        return None
+    for walk in receipt_walks.get((exact_somm_call_root, candidate.reference), ()):
+        if candidate.event_id in walk.steps[0].evidence_event_ids:
+            return walk
+    return None
+
+
 def _cost_roots(
     cost: NormalizedEvent, by_id: dict[str, NormalizedEvent]
 ) -> tuple[tuple[TypedRef, ...], tuple[str, ...]]:
@@ -717,6 +797,19 @@ def _cost_roots(
             if parent_id is not None and parent_id not in seen:
                 pending.append(parent_id)
     return tuple(sorted(roots)), tuple(sorted(lineage))
+
+
+def _exact_somm_call_root(
+    cost: NormalizedEvent, by_id: dict[str, NormalizedEvent]
+) -> TypedRef | None:
+    """Return the selected Somm cost's immediate call, excluding ancestor roots."""
+
+    if cost.source.adapter != "somm" or cost.parent_event_id is None:
+        return None
+    parent = by_id.get(cost.parent_event_id)
+    if parent is None or parent.kind is not EventKind.MODEL_CALL or parent.source.adapter != "somm":
+        return None
+    return TypedRef("somm.call", parent.source.native_id)
 
 
 def _event_ref(event: NormalizedEvent) -> TypedRef | None:

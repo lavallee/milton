@@ -54,11 +54,12 @@ dispositions are documented in [build, borrow, or adopt](docs/build-vs-adopt.md)
 ## Status
 
 The deterministic foundation and conservative cost-per-outcome projection are
-operational. Milton reads Chip, Claude Code, Codex, Fab, George, Git, Hermes,
-OpenCode, Somm, and Spindle exhaust; records identity joins separately from directed
-work relations; projects reported versus computed cost with exact-key
-precedence; attributes spend through inspectable paths; and exposes append-only
-finding review and action-receipt surfaces. The first George gate detector is
+operational. Milton reads Barnowl research-outcome envelopes, Chip, Claude Code,
+Codex, Fab, George, Git, Hermes, OpenCode, Somm, and Spindle exhaust; records
+identity joins separately from directed work relations; projects reported
+versus computed cost with exact-key precedence; attributes spend through
+inspectable paths; and exposes append-only finding review and action-receipt
+surfaces. The first George gate detector is
 implemented but remains offline because its frozen held-out corpus has no
 independent positive examples. Its promotion path now uses the
 generator-neutral, tuple-bound contract described in
@@ -189,6 +190,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for evidence-contract expectations and
   reads its self-contained receipt contract without importing or requiring
   Fab; Fab may be unavailable or private without affecting installation or
   default operation.
+- Barnowl — an optional producer of private `barnowl.research-outcome/v1`
+  ledgers. Milton has no default path or Barnowl dependency and reads a ledger
+  only when its exact JSONL path is supplied explicitly.
 
 ## License
 
