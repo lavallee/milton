@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A dependency-free, explicit-source-only `barnowl.research-outcome/v1`
+  adapter with strict private-safe validation and exact Somm-call cost
+  attribution. The existing outcome precedence order is unchanged; the new
+  outcome type is appended to the supported vocabulary.
+
 ## [0.1.0] — 2026-07-18
 
 ### Added

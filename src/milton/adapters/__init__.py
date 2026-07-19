@@ -1,5 +1,6 @@
 """Built-in source adapters."""
 
+from milton.adapters.barnowl_research_outcome import BarnowlResearchOutcomeAdapter
 from milton.adapters.base import ContentPolicy, SourceAdapter
 from milton.adapters.chip import ChipAdapter
 from milton.adapters.claude_code import ClaudeCodeAdapter
@@ -16,6 +17,7 @@ from milton.adapters.spindle import SpindleAdapter
 BUILTIN_ADAPTERS: dict[
     str,
     type[ClaudeCodeAdapter]
+    | type[BarnowlResearchOutcomeAdapter]
     | type[ChipAdapter]
     | type[CodexAdapter]
     | type[FabAdapter]
@@ -28,6 +30,7 @@ BUILTIN_ADAPTERS: dict[
     | type[SommAdapter]
     | type[SpindleAdapter],
 ] = {
+    "barnowl-research-outcome": BarnowlResearchOutcomeAdapter,
     "claude-code": ClaudeCodeAdapter,
     "chip": ChipAdapter,
     "codex": CodexAdapter,
@@ -50,6 +53,7 @@ def built_in_adapters(names: list[str] | None = None) -> list[SourceAdapter]:
 
 __all__ = [
     "BUILTIN_ADAPTERS",
+    "BarnowlResearchOutcomeAdapter",
     "ClaudeCodeAdapter",
     "ChipAdapter",
     "CodexAdapter",

@@ -32,6 +32,7 @@ operational result wins:
 2. `george.entry`
 3. `fab.job`
 4. `fab.attempt`
+5. `barnowl.research-outcome`
 
 One commit can therefore supersede its George task receipt and Fab runner
 result without counting the same call three times. Two reachable commit
@@ -41,6 +42,12 @@ that explicitly selected candidate vocabulary.
 
 PR merged/reverted/closed-unmerged outcomes remain out of the vocabulary until
 an authoritative PR source is implemented.
+
+The Barnowl type is appended, so the relative precedence and behavior of all
+four existing outcome types remain unchanged. Its eligible edge is narrowly
+`somm.call --produced--> barnowl.research-outcome`, emitted only from an exact
+non-null call ID in the source receipt. Provider/model coordinates, hashes,
+timestamps, and JSONL ordering are not join inputs.
 
 ## Eligible paths
 
@@ -95,6 +102,7 @@ their status is not rewritten into success or dropped from the denominator.
 milton cost --per-outcome --since 2026-07-10T00:00:00Z \
   --until 2026-07-11T00:00:00Z --format json
 milton cost --per-outcome --outcome-type fab.job
+milton cost --per-outcome --outcome-type barnowl.research-outcome
 ```
 
 JSON embeds the accounting projection, all three bucket totals, conservation

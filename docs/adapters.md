@@ -5,14 +5,14 @@ of them by default; `milton scan codex fab git` limits a pass. Every emitted
 field declares recovered, inferred, unavailable, or redacted coverage, and a
 source failure is recorded without stopping the other adapters.
 
-The Fab adapter is a format reader, not a package integration. Milton neither
-imports nor installs Fab: it reads the documented receipt shape when those
-receipts are present and otherwise records the source as unavailable. This
-keeps Milton independently installable and useful even while Fab is private or
-absent.
+The Fab and Barnowl adapters are format readers, not package integrations.
+Milton imports or installs neither producer. Barnowl research outcomes are even
+more narrowly bounded: the adapter has no default root and cannot discover a
+private ledger unless the operator supplies an explicit source path.
 
 | Adapter | Default Lisbon source | Recovered surface |
 | --- | --- | --- |
+| `barnowl-research-outcome` | none; explicit `--source` required | metadata-only `barnowl.research-outcome/v1` outcomes, their exact attempt/correlation/domain coordinates, and receipt-owned Somm call relations |
 | `claude-code` | `~/.claude/projects/**/*.jsonl` | sessions and subagents, turns, streamed model usage, paired tools |
 | `chip` | `candidate-receipts*.jsonl` (override with `MILTON_CHIP_RECEIPTS`) | bounded candidate custody outcomes plus exact finding-revision origin and receipt verification relations |
 | `codex` | `~/.codex/sessions/**/rollout-*.jsonl` | sessions, turns, tools, token usage, task completion |
@@ -61,6 +61,11 @@ most important known limits are:
   as unknown. A local `.milton-memory-access.jsonl` is consumed only when the
   host explicitly exports `milton.memory-access/v1` rows; retrieval never
   implies application.
+- Barnowl's optional envelope deliberately contains no prompt/evidence bodies,
+  tokens, latency, or cost. Milton rejects those keys recursively, even under
+  `--content full`; Somm remains authoritative for call telemetry and monetary
+  facts. A malformed line is diagnosed with its line number and cannot suppress
+  valid neighboring lines.
 
 These are producer-contract gaps, not invitations for Milton to reconstruct
 facts heuristically. The proposed changes are scoped as commissions under
@@ -72,6 +77,12 @@ ambiguous work unassigned.
 
 Current relation emission is deliberately narrow:
 
+- Barnowl emits one
+  `somm.call --produced--> barnowl.research-outcome` relation for each exact,
+  non-null call ID carried by the outcome receipt. Attempt, correlation, and
+  domain-object records are retained only from endpoints present together in
+  that same envelope. Timestamps, hashes, provider/model similarity, and row
+  order never establish identity or a work relation.
 - For legacy job-scoped correlation, Somm emits
   `fab.job --produced--> somm.call`. Current Fab attempts use the explicit
   `<job>:attempt:<n>` coordinate; the Somm row supplies the association and the
@@ -178,3 +189,30 @@ Multiple roots for one adapter may be supplied by repeating `--source`. The
 machine-readable ingestion result and stored adapter-run coverage distinguish
 `ok`, `empty`, and `error`, including adapters that legitimately emitted zero
 events in the requested window.
+
+## Explicit Barnowl outcome accounting
+
+Scan a chosen private-safe envelope alongside the authoritative Somm database:
+
+```console
+uv run milton scan somm barnowl-research-outcome \
+  --source somm=/explicit/path/global.sqlite \
+  --source barnowl-research-outcome=/explicit/private/research-outcomes.jsonl \
+  --force
+```
+
+Then select the new typed denominator without changing the existing outcome
+precedence:
+
+```console
+uv run milton cost --per-outcome \
+  --outcome-type barnowl.research-outcome \
+  --store .milton/events.db --format json
+```
+
+These commands are offline and read-only. Milton keeps only the envelope's
+coordinate, treatment, authority, and judgment/error metadata. It obtains
+tokens, latency, and cost from the separately selected Somm call whose exact ID
+is named by the typed receipt relation. This slice does not scan a live/private
+ledger by default, prove live coverage, calculate admitted or later-corroborated
+effectiveness, or complete George item `01KXVC2A40QMECJYQE50QWG9WA`.

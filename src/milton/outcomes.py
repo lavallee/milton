@@ -25,6 +25,7 @@ OUTCOME_PRECEDENCE: tuple[str, ...] = (
     "george.entry",
     "fab.job",
     "fab.attempt",
+    "barnowl.research-outcome",
 )
 
 
@@ -530,6 +531,12 @@ def _candidate_ref(event: NormalizedEvent, payload: OutcomePayload) -> tuple[str
         return "fab.job", TypedRef("fab.job", payload.reference)
     if payload.outcome_type == "fab.attempt":
         return "fab.attempt", TypedRef("fab.attempt", event.source.native_id)
+    if (
+        event.source.adapter == "barnowl-research-outcome"
+        and payload.outcome_type == "barnowl.research-outcome"
+        and payload.reference
+    ):
+        return payload.outcome_type, TypedRef(payload.outcome_type, payload.reference)
     return None
 
 
@@ -661,6 +668,7 @@ def _relation_supports_attribution(relation: RelationRecord) -> bool:
     pair = (relation.subject.namespace, relation.object.namespace)
     if relation.predicate is RelationKind.PRODUCED:
         return pair in {
+            ("somm.call", "barnowl.research-outcome"),
             ("fab.job", "somm.call"),
             ("fab.job", "git.commit"),
             ("fab.job", "codex.session"),
