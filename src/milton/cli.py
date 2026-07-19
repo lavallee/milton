@@ -8,11 +8,13 @@ import re
 import sys
 from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any, cast
 
 from milton.activity import build_activity
 from milton.adapters import BUILTIN_ADAPTERS, ContentPolicy, built_in_adapters
+from milton.barnowl_effectiveness import DEFAULT_JOIN_COVERAGE_THRESHOLD
 from milton.crosswalk import ExternalIdentity
 from milton.errors import MiltonError
 from milton.evaluation import FindingEvaluationResult
@@ -92,6 +94,25 @@ def _parser() -> argparse.ArgumentParser:
     cost.add_argument("--until", help="exclusive ISO8601 end for selected cost events")
     cost.add_argument("--outcome-type", action="append", choices=OUTCOME_PRECEDENCE, default=[])
     cost.add_argument("--format", choices=("text", "json"), default="text")
+
+    effectiveness = subparsers.add_parser(
+        "effectiveness", help="project privacy-safe effectiveness from exact outcome receipts"
+    )
+    effectiveness_commands = effectiveness.add_subparsers(
+        dest="effectiveness_command", required=True
+    )
+    barnowl_effectiveness = effectiveness_commands.add_parser(
+        "barnowl", help="project Barnowl raw yields and standardized semantic follow-up"
+    )
+    barnowl_effectiveness.add_argument("--store", type=Path, required=True)
+    barnowl_effectiveness.add_argument("--since", help="inclusive ISO8601 event time")
+    barnowl_effectiveness.add_argument("--until", help="exclusive ISO8601 event cutoff")
+    barnowl_effectiveness.add_argument(
+        "--join-coverage-threshold",
+        default=str(DEFAULT_JOIN_COVERAGE_THRESHOLD),
+        help="minimum exact receipt-call join rate in [0,1] (default: 0.95)",
+    )
+    barnowl_effectiveness.add_argument("--format", choices=("text", "json"), default="text")
 
     evidence = subparsers.add_parser(
         "evidence", help="export bounded evidence documents for downstream consumers"
@@ -410,6 +431,30 @@ def main(argv: Sequence[str] | None = None) -> int:
                 canonical_json(outcome_projection.to_dict())
                 if args.format == "json"
                 else outcome_projection.to_text()
+            )
+            return 0
+
+        if args.command == "effectiveness" and args.effectiveness_command == "barnowl":
+            if not args.store.exists():
+                print(f"milton: event store does not exist: {args.store}", file=sys.stderr)
+                return 2
+            since = _parse_timestamp(args.since, "--since")
+            until = _parse_timestamp(args.until, "--until")
+            if since is not None and until is not None and since >= until:
+                raise MiltonError("--since must be earlier than --until")
+            threshold = _parse_unit_decimal(
+                args.join_coverage_threshold, "--join-coverage-threshold"
+            )
+            with MiltonStore(args.store, read_only=True) as store:
+                effectiveness_projection = store.barnowl_effectiveness(
+                    since=since,
+                    until=until,
+                    join_coverage_threshold=threshold,
+                )
+            print(
+                canonical_json(effectiveness_projection.to_dict())
+                if args.format == "json"
+                else effectiveness_projection.to_text()
             )
             return 0
 
@@ -1097,6 +1142,16 @@ def _parse_timestamp(value: str | None, option: str) -> datetime | None:
     if parsed.tzinfo is None or parsed.utcoffset() is None:
         raise MiltonError(f"{option} must include a timezone")
     return parsed.astimezone(UTC)
+
+
+def _parse_unit_decimal(value: str, option: str) -> Decimal:
+    try:
+        parsed = Decimal(value)
+    except InvalidOperation as error:
+        raise MiltonError(f"{option} must be a decimal between 0 and 1") from error
+    if not parsed.is_finite() or not Decimal(0) <= parsed <= Decimal(1):
+        raise MiltonError(f"{option} must be between 0 and 1")
+    return parsed
 
 
 def _finding_relation_args(args: argparse.Namespace) -> tuple[RelationKind, str]:

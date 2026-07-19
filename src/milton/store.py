@@ -3,13 +3,22 @@
 from __future__ import annotations
 
 import json
+import shutil
 import sqlite3
+import tempfile
 from collections import deque
 from collections.abc import Iterable, Iterator
+from datetime import datetime
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
 from milton.accounting import AccountingProjection, build_accounting
+from milton.barnowl_effectiveness import (
+    DEFAULT_JOIN_COVERAGE_THRESHOLD,
+    BarnowlEffectivenessProjection,
+    build_barnowl_effectiveness,
+)
 from milton.crosswalk import CrosswalkRecord, ExternalIdentity, JoinState
 from milton.errors import RecordConflictError, ValidationError
 from milton.model import (
@@ -166,14 +175,49 @@ class MiltonStore:
 
     SCHEMA_VERSION = 1
 
-    def __init__(self, path: str | Path) -> None:
+    def __init__(self, path: str | Path, *, read_only: bool = False) -> None:
         self.path = Path(path)
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        self._connection = sqlite3.connect(self.path)
+        self._read_snapshot: tempfile.TemporaryDirectory[str] | None = None
+        if read_only:
+            self._connection = self._open_read_snapshot()
+        else:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            self._connection = sqlite3.connect(self.path)
         self._connection.row_factory = sqlite3.Row
         self._connection.execute("PRAGMA foreign_keys = ON")
-        self._connection.execute("PRAGMA journal_mode = WAL")
-        self._initialize()
+        if read_only:
+            self._connection.execute("PRAGMA query_only = ON")
+            self._validate_schema()
+        else:
+            self._connection.execute("PRAGMA journal_mode = WAL")
+            self._initialize()
+
+    def _open_read_snapshot(self) -> sqlite3.Connection:
+        """Copy the SQLite state so reads never create source WAL/SHM sidecars."""
+
+        snapshot = tempfile.TemporaryDirectory(prefix="milton-readonly-")
+        self._read_snapshot = snapshot
+        snapshot_path = Path(snapshot.name) / "events.db"
+        try:
+            shutil.copyfile(self.path, snapshot_path)
+            for suffix in ("-wal", "-shm", "-journal"):
+                source_sidecar = Path(f"{self.path}{suffix}")
+                if source_sidecar.is_file():
+                    shutil.copyfile(source_sidecar, Path(f"{snapshot_path}{suffix}"))
+            return sqlite3.connect(snapshot_path)
+        except Exception:
+            snapshot.cleanup()
+            self._read_snapshot = None
+            raise
+
+    def _validate_schema(self) -> None:
+        try:
+            rows = self._connection.execute("SELECT version FROM schema_meta").fetchall()
+        except sqlite3.DatabaseError as error:
+            raise ValidationError("event store is not an initialized Milton database") from error
+        if len(rows) != 1 or rows[0]["version"] != self.SCHEMA_VERSION:
+            versions = [row["version"] for row in rows]
+            raise ValidationError(f"unsupported store schema versions: {versions}")
 
     def _initialize(self) -> None:
         with self._connection:
@@ -194,7 +238,12 @@ class MiltonStore:
                 self._connection.execute("ALTER TABLE adapter_runs ADD COLUMN until_at TEXT")
 
     def close(self) -> None:
-        self._connection.close()
+        try:
+            self._connection.close()
+        finally:
+            if self._read_snapshot is not None:
+                self._read_snapshot.cleanup()
+                self._read_snapshot = None
 
     def __enter__(self) -> MiltonStore:
         return self
@@ -400,6 +449,24 @@ class MiltonStore:
             source_coverage=coverage,
         )
 
+    def barnowl_effectiveness(
+        self,
+        *,
+        since: datetime | None = None,
+        until: datetime | None = None,
+        join_coverage_threshold: Decimal = DEFAULT_JOIN_COVERAGE_THRESHOLD,
+    ) -> BarnowlEffectivenessProjection:
+        """Project aggregate Barnowl effectiveness without scanning or mutating sources."""
+
+        return build_barnowl_effectiveness(
+            self.events(),
+            self.crosswalk_records(),
+            self.relation_records(),
+            since=since,
+            until=until,
+            join_coverage_threshold=join_coverage_threshold,
+        )
+
     def source_coverage(self) -> dict[str, SourceCoverageSummary]:
         cursor = self._connection.execute(
             """
@@ -601,6 +668,20 @@ class MiltonStore:
             if not isinstance(raw, dict):  # pragma: no cover - protected by append path
                 raise ValidationError("stored crosswalk record must be a JSON object")
             yield CrosswalkRecord.from_dict(raw)
+
+    def crosswalk_records(self) -> tuple[CrosswalkRecord, ...]:
+        """Return immutable crosswalk revisions in append order."""
+
+        cursor = self._connection.execute(
+            "SELECT document_json FROM crosswalk_records ORDER BY sequence"
+        )
+        records: list[CrosswalkRecord] = []
+        for row in cursor:
+            raw = json.loads(row["document_json"])
+            if not isinstance(raw, dict):  # pragma: no cover - protected by append path
+                raise ValidationError("stored crosswalk record must be a JSON object")
+            records.append(CrosswalkRecord.from_dict(raw))
+        return tuple(records)
 
     def append_relation(self, record: RelationRecord) -> bool:
         """Append relation evidence, allowing corroboration before terminal refutation."""

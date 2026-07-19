@@ -210,12 +210,71 @@ uv run milton cost --per-outcome \
   --store .milton/events.db --format json
 ```
 
-These commands are offline and read-only. Milton keeps only the envelope's
-coordinate, treatment, authority, and judgment/error metadata. It obtains
-tokens, latency, and cost from the separately selected Somm call whose exact ID
-is named by the typed receipt relation. Attribution requires the selected Somm
-cost's immediate call root and the receipt-authored, one-step, forward
-`produced` edge to the outcome. Crosswalks, reverse edges, longer walks, and
-cycles cannot substitute for that edge. This slice does not scan a live/private
-ledger by default, prove live coverage, calculate admitted or later-corroborated
-effectiveness, or complete George item `01KXVC2A40QMECJYQE50QWG9WA`.
+The scan reads its explicitly named inputs and writes normalized records to the
+Milton store. The cost projection is offline and read-only. Milton keeps only
+the envelope's coordinate, treatment, authority, and judgment/error metadata.
+It obtains tokens, latency, and cost from the separately selected Somm call
+whose exact ID is named by the typed receipt relation. Attribution requires the
+selected Somm cost's immediate call root and the receipt-authored, one-step,
+forward `produced` edge to the outcome. Crosswalks, reverse edges, longer walks,
+and cycles cannot substitute for that edge.
+
+## Barnowl effectiveness projection
+
+After the normalized store exists, run the specialized projection without
+rescanning either source:
+
+```console
+uv run milton effectiveness barnowl \
+  --store /explicit/private/milton.db \
+  --since 2026-07-10T00:00:00Z \
+  --until 2026-07-11T00:00:00Z \
+  --join-coverage-threshold 0.95 \
+  --format json
+```
+
+This command opens the existing SQLite store read-only. It does not discover or
+scan Barnowl/Somm sources, append normalized events, contact a provider, or
+control a route. Both bounds select receipt outcomes and monetary observations;
+`--until` is exclusive and also serves as the reproducibility cutoff. Supporting
+call events before `--since` may establish an exact selected-cost root, but a
+Barnowl receipt outside the selected window cannot enter the denominator or a
+follow-up chain. A predecessor before `--since` is reported as
+`outside_window`; it is never followed silently.
+
+The report keeps two denominators deliberately separate:
+
+- receipt-coordinate coverage starts from receipt call slots. It reports null
+  IDs, non-null occurrences, distinct and cross-receipt duplicate IDs, exact
+  selected observations joined, and receipt call coordinates with no selected
+  cost. Its exact-join percentage is joined non-null coordinate occurrences
+  divided by all non-null coordinate occurrences;
+- selected-window allocation starts from accounting-selected observations. It
+  partitions every observation and Decimal amount exactly once into
+  `attributed`, `ambiguous`, or `unallocated`, with observation/cost percentages
+  and attribution reason counts.
+
+A zero denominator is `null`, not zero-percent success. The default exact-join
+threshold is `0.95` and accepts any value in `[0,1]`; meeting it removes only the
+coverage gate. It does not by itself make effectiveness claimable.
+
+Only the case-sensitive receipt judgments `ADMITTED`, `REJECTED`, and
+`CORROBORATED` have standardized semantic meaning. `outcome.kind=error` supplies
+the error bucket. Every other judgment—including `EVIDENCED`, `PARTIAL`,
+`UNANSWERED`, and `verified`—stays an exact raw label in an `unmapped` bucket and
+cannot be promoted into an admission or corroboration. Follow-up chains also
+abstain on missing/out-of-window predecessors, cross-domain links, forks,
+cycles, or non-increasing timestamps. See
+[outcome attribution](outcome-attribution.md#barnowl-usage-versus-effectiveness)
+for the complete claimability fence.
+
+### Owner post-merge run
+
+The owner performs one explicit run of the command above against the already
+normalized private two-workload store, using fixed ISO bounds and the default
+threshold. Record the schema version, window/cutoff, receipt-coordinate
+coverage, selected-window conservation, semantic status, and closed reason
+codes in George item `01KXVC2A40QMECJYQE50QWG9WA`. Do not copy event/call,
+attempt/correlation, domain-object, prompt, provider/model, path, URL, source
+path, or body data into George, and do not revise source-document live numbers
+before that owner run.
