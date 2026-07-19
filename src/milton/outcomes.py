@@ -684,6 +684,11 @@ def _relation_supports_attribution(relation: RelationRecord) -> bool:
             ("somm.call", "fab.attempt"),
             ("fab.attempt", "fab.job"),
         }
+    if relation.predicate is RelationKind.EVALUATES:
+        # A synchronous Somm eval may explicitly stamp the Git implementation
+        # being exercised even when no outer Fab attempt exists. The adapter
+        # emits this edge only from the source-owned eval receipt.
+        return pair == ("somm.call", "git.commit")
     return False
 
 

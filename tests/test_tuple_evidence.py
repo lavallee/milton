@@ -168,6 +168,77 @@ def test_tuple_snapshot_is_versioned_exact_and_evidence_only(tmp_path: Path) -> 
     assert snapshot.evidence[0]["relation_ids"]
 
 
+def test_direct_somm_eval_receipt_binds_native_harness_to_commit(tmp_path: Path) -> None:
+    call = NormalizedEvent.create(
+        source=SourceRef("somm", "eval-call"),
+        occurred_at=NOW,
+        recorded_at=NOW,
+        payload=ModelCallPayload("minimax", "MiniMax-M3", CallStatus.SUCCEEDED, "ok"),
+        attributes={"workload_id": "wl-source-score", "origin": "native"},
+    )
+    cost = NormalizedEvent.create(
+        source=SourceRef("somm", "cost:eval-call"),
+        occurred_at=NOW,
+        recorded_at=NOW,
+        parent_event_id=call.event_id,
+        payload=CostPayload(
+            Decimal("0.01"), 10, 2, 0, "minimax", "MiniMax-M3",
+            basis=CostBasis.COMPUTED,
+            kind=CostKind.MARGINAL,
+            accuracy=CostAccuracy.ESTIMATED,
+            authority="somm",
+            accounting_key="somm.call=eval-call",
+            accounting_key_scope=CostKeyScope.SOURCE,
+            observation_role=CostObservationRole.PRODUCTION,
+        ),
+    )
+    receipt = NormalizedEvent.create(
+        source=SourceRef("somm", "eval-receipt:receipt-1"),
+        occurred_at=NOW + timedelta(seconds=1),
+        recorded_at=NOW + timedelta(seconds=1),
+        payload=OutcomePayload(
+            "somm.eval-receipt.dataset_run", OutcomeStatus.SUCCEEDED, "eval-call"
+        ),
+    )
+    commit = NormalizedEvent.create(
+        source=SourceRef("git", f"project#{SHA}"),
+        occurred_at=NOW + timedelta(seconds=2),
+        recorded_at=NOW + timedelta(seconds=2),
+        payload=OutcomePayload("git.commit", OutcomeStatus.SUCCEEDED, SHA),
+    )
+    relations = [
+        RelationRecord.create(
+            subject=TypedRef("somm.eval-receipt", "eval-receipt:receipt-1"),
+            predicate=RelationKind.EVALUATES,
+            object=TypedRef("somm.call", "eval-call"),
+            confidence=1,
+            method=RelationMethod.SOURCE_RECEIPT,
+            recorded_at=receipt.occurred_at,
+        ),
+        RelationRecord.create(
+            subject=TypedRef("somm.call", "eval-call"),
+            predicate=RelationKind.EVALUATES,
+            object=TypedRef("git.commit", SHA),
+            confidence=1,
+            method=RelationMethod.SOURCE_RECEIPT,
+            recorded_at=receipt.occurred_at,
+        ),
+    ]
+    with MiltonStore(tmp_path / "direct-somm.sqlite") as store:
+        store.append_events((call, cost, receipt, commit))
+        for relation in relations:
+            store.append_relation(relation)
+        snapshot = build_tuple_evidence(
+            store,
+            OutcomeTuple(SHA, "wl-source-score", "MiniMax-M3", "somm"),
+            cutoff=NOW + timedelta(minutes=1),
+            minimum_observations=1,
+        )
+
+    assert snapshot.state is TupleEvidenceState.READY, snapshot.to_dict()
+    assert snapshot.attributed_observations == 1
+
+
 def test_tuple_snapshot_fails_safe_when_sparse_or_confounding(tmp_path: Path) -> None:
     with MiltonStore(tmp_path / "sparse.sqlite") as store:
         _populate(store)
