@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   adapter with strict private-safe validation and exact Somm-call cost
   attribution. The existing outcome precedence order is unchanged; the new
   outcome type is appended to the supported vocabulary.
+- The read-only `milton effectiveness barnowl` projection with separate
+  receipt-join and selected-window coverage, exact Decimal conservation,
+  privacy-safe aggregates, and standardized follow-up claimability gates.
 
 ## [0.1.0] — 2026-07-18
 
