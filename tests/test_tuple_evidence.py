@@ -182,7 +182,12 @@ def test_direct_somm_eval_receipt_binds_native_harness_to_commit(tmp_path: Path)
         recorded_at=NOW,
         parent_event_id=call.event_id,
         payload=CostPayload(
-            Decimal("0.01"), 10, 2, 0, "minimax", "MiniMax-M3",
+            Decimal("0.01"),
+            10,
+            2,
+            0,
+            "minimax",
+            "MiniMax-M3",
             basis=CostBasis.COMPUTED,
             kind=CostKind.MARGINAL,
             accuracy=CostAccuracy.ESTIMATED,
