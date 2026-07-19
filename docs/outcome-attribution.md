@@ -46,8 +46,11 @@ an authoritative PR source is implemented.
 The Barnowl type is appended, so the relative precedence and behavior of all
 four existing outcome types remain unchanged. Its eligible edge is narrowly
 `somm.call --produced--> barnowl.research-outcome`, emitted only from an exact
-non-null call ID in the source receipt. Provider/model coordinates, hashes,
-timestamps, and JSONL ordering are not join inputs.
+non-null call ID in the source receipt. The selected Somm cost must begin at
+that exact immediate call root, and the path must be the receipt-authored,
+one-step, forward edge. Crosswalks, reverse edges, longer walks, and cycles do
+not qualify Barnowl attribution. Provider/model coordinates, hashes, timestamps,
+and JSONL ordering are not join inputs.
 
 ## Eligible paths
 

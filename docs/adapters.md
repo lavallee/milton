@@ -213,6 +213,9 @@ uv run milton cost --per-outcome \
 These commands are offline and read-only. Milton keeps only the envelope's
 coordinate, treatment, authority, and judgment/error metadata. It obtains
 tokens, latency, and cost from the separately selected Somm call whose exact ID
-is named by the typed receipt relation. This slice does not scan a live/private
+is named by the typed receipt relation. Attribution requires the selected Somm
+cost's immediate call root and the receipt-authored, one-step, forward
+`produced` edge to the outcome. Crosswalks, reverse edges, longer walks, and
+cycles cannot substitute for that edge. This slice does not scan a live/private
 ledger by default, prove live coverage, calculate admitted or later-corroborated
 effectiveness, or complete George item `01KXVC2A40QMECJYQE50QWG9WA`.

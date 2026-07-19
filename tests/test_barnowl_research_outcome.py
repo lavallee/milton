@@ -21,7 +21,7 @@ from milton.adapters.base import AdapterRecord
 from milton.crosswalk import CrosswalkRecord
 from milton.ingest import Ingestor
 from milton.model import ModelCallPayload, NormalizedEvent, OutcomePayload, OutcomeStatus
-from milton.outcomes import OUTCOME_PRECEDENCE, AttributionState
+from milton.outcomes import OUTCOME_PRECEDENCE, AttributionReason, AttributionState
 from milton.relations import RelationKind, RelationMethod, RelationRecord
 from milton.store import MiltonStore
 
@@ -113,7 +113,7 @@ def test_valid_fixture_is_metadata_only_and_does_not_import_barnowl(
         },
     ]
     assert events[0].attributes["correlation"] == {
-        "namespace": "somm.correlation",
+        "namespace": "correlation",
         "correlation_id": "correlation-retry-1",
     }
     assert "content" not in json.dumps([event.to_dict() for event in events])
@@ -246,6 +246,7 @@ def test_exact_receipt_paths_are_idempotent_and_conserve_matching_somm_cost(
         projection = store.outcome_attribution(outcome_types=("barnowl.research-outcome",))
         barnowl_events = tuple(store.events(adapter="barnowl-research-outcome"))
         somm_events = tuple(store.events(adapter="somm"))
+        crosswalks = store.current_crosswalks()
         relations = store.current_relations()
 
     first_barnowl = next(
@@ -261,20 +262,28 @@ def test_exact_receipt_paths_are_idempotent_and_conserve_matching_somm_cost(
     assert second_barnowl.crosswalks_inserted == 0
     assert second_barnowl.replayed == 10
 
-    calls = [
-        payload for event in somm_events if isinstance((payload := event.payload), ModelCallPayload)
-    ]
+    call_events = [event for event in somm_events if isinstance(event.payload, ModelCallPayload)]
+    calls: list[ModelCallPayload] = []
+    for event in call_events:
+        assert isinstance(event.payload, ModelCallPayload)
+        calls.append(event.payload)
     assert [(call.provider, call.model) for call in calls] == [
         ("fixture-provider-a", "fixture-model-a"),
         ("fixture-provider-b", "fixture-model-b"),
+        ("fixture-provider-c", "fixture-model-c"),
     ]
+    calls_by_native_id = {call.source.native_id: call for call in call_events}
+    assert (
+        calls_by_native_id["fixture-call-unlisted"].parent_event_id
+        == calls_by_native_id["fixture-call-1"].event_id
+    )
     judged = next(event for event in barnowl_events if event.source.native_id == JUDGED_EVENT_ID)
     assert judged.attributes["attempt"] == {
         "namespace": "fixture.barnowl-attempt",
         "attempt_id": "attempt-retry-1",
     }
     assert judged.attributes["correlation"] == {
-        "namespace": "somm.correlation",
+        "namespace": "correlation",
         "correlation_id": "correlation-retry-1",
     }
 
@@ -290,6 +299,23 @@ def test_exact_receipt_paths_are_idempotent_and_conserve_matching_somm_cost(
     }
     assert {relation.object.value for relation in exact_relations} == {JUDGED_EVENT_ID}
 
+    correlation_members = {
+        (endpoint.namespace, endpoint.value)
+        for crosswalk in crosswalks
+        if (crosswalk.left.namespace, crosswalk.left.value)
+        == ("correlation", "correlation-retry-1")
+        or (crosswalk.right.namespace, crosswalk.right.value)
+        == ("correlation", "correlation-retry-1")
+        for endpoint in (crosswalk.left, crosswalk.right)
+    }
+    assert correlation_members == {
+        ("barnowl.research-outcome", JUDGED_EVENT_ID),
+        ("correlation", "correlation-retry-1"),
+        ("somm.call", "fixture-call-1"),
+        ("somm.call", "fixture-call-2"),
+        ("somm.call", "fixture-call-unlisted"),
+    }
+
     assert OUTCOME_PRECEDENCE[:4] == (
         "git.commit",
         "george.entry",
@@ -297,31 +323,51 @@ def test_exact_receipt_paths_are_idempotent_and_conserve_matching_somm_cost(
         "fab.attempt",
     )
     assert OUTCOME_PRECEDENCE[-1] == "barnowl.research-outcome"
-    assert projection.selected_total_usd == Decimal("0.30")
+    assert projection.selected_total_usd == Decimal("0.37")
     assert projection.attributed_total_usd == Decimal("0.30")
     assert projection.ambiguous_total_usd == Decimal(0)
-    assert projection.unallocated_total_usd == Decimal(0)
+    assert projection.unallocated_total_usd == Decimal("0.07")
     assert projection.selected_total_usd == (
         projection.attributed_total_usd
         + projection.ambiguous_total_usd
         + projection.unallocated_total_usd
     )
-    assert len(projection.records) == 2
-    assert all(record.state is AttributionState.ATTRIBUTED for record in projection.records)
-    assert all(record.outcome is not None for record in projection.records)
+    assert len(projection.records) == 3
+    attributed = [
+        record for record in projection.records if record.state is AttributionState.ATTRIBUTED
+    ]
+    assert {record.source_native_id for record in attributed} == {
+        "cost:fixture-call-1",
+        "cost:fixture-call-2",
+    }
+    assert all(record.outcome is not None for record in attributed)
     assert all(
         record.outcome is not None and record.outcome.reference.value == JUDGED_EVENT_ID
-        for record in projection.records
+        for record in attributed
     )
-    assert all(
-        record.path is not None and len(record.path.steps) == 1 for record in projection.records
-    )
+    assert all(record.path is not None and len(record.path.steps) == 1 for record in attributed)
     assert all(
         record.path is not None
         and record.path.steps[0].predicate == RelationKind.PRODUCED.value
         and record.path.steps[0].direction == "forward"
-        for record in projection.records
+        for record in attributed
     )
+    unlisted = next(
+        record
+        for record in projection.records
+        if record.source_native_id == "cost:fixture-call-unlisted"
+    )
+    assert unlisted.state is AttributionState.UNALLOCATED
+    assert unlisted.reason is AttributionReason.ASSOCIATION_ONLY
+    assert unlisted.outcome is None
+    assert len(unlisted.candidates) == 1
+    assert not unlisted.candidates[0].eligible
+    assert unlisted.candidates[0].candidate.reference.value == JUDGED_EVENT_ID
+    diagnostic_path = unlisted.candidates[0].path
+    assert diagnostic_path.references[0].value == "fixture-call-1"
+    assert len(diagnostic_path.steps) == 1
+    assert diagnostic_path.steps[0].predicate == RelationKind.PRODUCED.value
+    assert diagnostic_path.steps[0].direction == "forward"
     assert len(projection.outcomes) == 1
     assert projection.outcomes[0].amount_usd == Decimal("0.30")
     assert projection.outcomes[0].observations == 2
