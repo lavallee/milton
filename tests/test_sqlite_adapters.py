@@ -211,7 +211,8 @@ def test_somm_v22_evidence_flows_without_duplicate_cost_filters(tmp_path: Path) 
         );
         INSERT INTO eval_receipts VALUES
           ('receipt-1', 1, 'run-1', 'shadow_eval', 'prod', NULL, NULL, 'prod',
-           NULL, NULL, NULL, 1.0, 0.8, '{"evidence":"kept private"}',
+           NULL, NULL, NULL, 1.0, 0.8,
+           '{"evidence":"kept private","implementation":"abc123"}',
            '2026-07-17 14:03:01');
 
         CREATE TABLE campaigns (
@@ -271,8 +272,10 @@ def test_somm_v22_evidence_flows_without_duplicate_cost_filters(tmp_path: Path) 
     events = normalized(records)
     calls = [event for event in events if isinstance(event.payload, ModelCallPayload)]
     costs = [event.payload for event in events if isinstance(event.payload, CostPayload)]
+    relations = [record for record in records if isinstance(record, RelationRecord)]
 
     assert len(calls) == 3
+    assert all(event.source.adapter == "somm" for event in calls)
     assert {event.attributes["observation_role"] for event in calls} == {
         "production",
         "shadow_gold",
@@ -297,6 +300,13 @@ def test_somm_v22_evidence_flows_without_duplicate_cost_filters(tmp_path: Path) 
         "req-gold",
         "req-judge",
     }
+    assert any(
+        relation.predicate is RelationKind.EVALUATES
+        and relation.subject.namespace == "somm.call"
+        and relation.object.namespace == "git.commit"
+        and relation.object.value == "abc123"
+        for relation in relations
+    )
     assert not [
         diagnostic
         for diagnostic in read.stats.diagnostics

@@ -521,6 +521,7 @@ def _read_eval_receipts(
             if receipt_type == "procedure_outcome"
             else None
         )
+        implementation = _eval_receipt_implementation(row["payload_json"])
         eval_result_id = _integer(row["eval_result_id"])
         parent_event_id = (
             stable_id("evt", "somm", "outcome", f"eval-result:{eval_result_id}")
@@ -545,6 +546,7 @@ def _read_eval_receipts(
                 "winner": string_or_none(row["winner"]),
                 "score": _number(row["score"]),
                 "threshold": _number(row["threshold"]),
+                "implementation": implementation,
                 **(procedure or {}),
                 **_protected_text_attributes("payload", row["payload_json"]),
             },
@@ -564,18 +566,17 @@ def _read_eval_receipts(
                 recorded_at=timestamp,
                 note="Somm eval receipt carries its eval_result_id",
             )
-        for call_id in sorted(
-            {
-                value
-                for value in (
-                    string_or_none(row["call_id"]),
-                    string_or_none(row["source_call_id"]),
-                    string_or_none(row["candidate_a_call_id"]),
-                    string_or_none(row["candidate_b_call_id"]),
-                )
-                if value
+        call_ids = sorted(
+            value
+            for value in {
+                string_or_none(row["call_id"]),
+                string_or_none(row["source_call_id"]),
+                string_or_none(row["candidate_a_call_id"]),
+                string_or_none(row["candidate_b_call_id"]),
             }
-        ):
+            if value
+        )
+        for call_id in call_ids:
             stats.emitted_records += 1
             yield RelationRecord.create(
                 subject=receipt_ref,
@@ -587,6 +588,19 @@ def _read_eval_receipts(
                 recorded_at=timestamp,
                 note="Somm eval receipt explicitly names this call",
             )
+        if implementation:
+            for call_id in call_ids:
+                stats.emitted_records += 1
+                yield RelationRecord.create(
+                    subject=TypedRef("somm.call", call_id),
+                    predicate=RelationKind.EVALUATES,
+                    object=TypedRef("git.commit", implementation),
+                    confidence=1,
+                    method=RelationMethod.SOURCE_RECEIPT,
+                    evidence_event_ids=(event.event_id,),
+                    recorded_at=timestamp,
+                    note="Somm eval receipt binds this call to the evaluated implementation",
+                )
         run_id = string_or_none(row["run_id"])
         if run_id:
             stats.emitted_records += 1
@@ -711,6 +725,19 @@ def _procedure_outcome_payload(value: object) -> dict[str, JsonValue] | None:
             },
         ),
     }
+
+
+def _eval_receipt_implementation(value: object) -> str | None:
+    """Read an operator-declared implementation coordinate from a receipt."""
+    if not isinstance(value, str):
+        return None
+    try:
+        raw = json.loads(value)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(raw, dict):
+        return None
+    return string_or_none(raw.get("implementation"))
 
 
 def _read_campaigns(

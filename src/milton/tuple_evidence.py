@@ -312,6 +312,8 @@ def _record_harness(
     session = events.get(call.session_id or "")
     if session is not None and isinstance(session.payload, SessionPayload):
         return session.payload.harness
+    if call.source.adapter == "somm" and call.attributes.get("origin") == "native":
+        return "somm"
     return None
 
 

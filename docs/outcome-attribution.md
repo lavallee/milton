@@ -70,6 +70,11 @@ example, a cost rooted at `somm.call` may follow the stored
 `fab.job --produced--> somm.call` edge in reverse to recover its producer; the
 path still renders the predicate and `reverse` traversal direction.
 
+A direct synchronous Somm dataset eval can also provide an eligible
+`somm.call --evaluates--> git.commit` path. This edge is accepted only when the
+Somm eval receipt explicitly carries the implementation coordinate; a shared
+timestamp, repository name, or model id never creates it.
+
 ## Reason codes
 
 | Code | Bucket | Meaning |
