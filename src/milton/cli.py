@@ -78,6 +78,7 @@ def _parser() -> argparse.ArgumentParser:
     report = subparsers.add_parser("report", help="summarize normalized events and coverage")
     report.add_argument("--store", type=Path, default=Path(".milton/events.db"))
     report.add_argument("--since", help="report events at/after ISO timestamp or duration")
+    report.add_argument("--until", help="exclusive ISO8601 end of the reported window")
     report.add_argument("--format", choices=("text", "json"), default="text")
 
     accounting = subparsers.add_parser(
@@ -85,6 +86,7 @@ def _parser() -> argparse.ArgumentParser:
     )
     accounting.add_argument("--store", type=Path, default=Path(".milton/events.db"))
     accounting.add_argument("--since", help="project events at/after ISO timestamp or duration")
+    accounting.add_argument("--until", help="exclusive ISO8601 end of the projected window")
     accounting.add_argument("--format", choices=("text", "json"), default="text")
 
     cost = subparsers.add_parser("cost", help="reconcile selected costs to typed outcomes")
@@ -390,8 +392,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                 print("Run `milton init` first, then ingest an adapter.", file=sys.stderr)
                 return 2
             since = _parse_since(args.since)
+            until = _parse_timestamp(args.until, "--until")
+            if since is not None and until is not None and since >= until:
+                raise MiltonError("--since must be earlier than --until")
             with MiltonStore(args.store) as store:
-                report = store.report(since=format_datetime(since) if since else None)
+                report = store.report(
+                    since=format_datetime(since) if since else None,
+                    until=format_datetime(until) if until else None,
+                )
             print(canonical_json(report.to_dict()) if args.format == "json" else report.to_text())
             return 0
 
@@ -401,9 +409,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                 print("Run `milton init` first, then ingest an adapter.", file=sys.stderr)
                 return 2
             since = _parse_since(args.since)
+            until = _parse_timestamp(args.until, "--until")
+            if since is not None and until is not None and since >= until:
+                raise MiltonError("--since must be earlier than --until")
             with MiltonStore(args.store) as store:
                 accounting_projection = store.accounting(
-                    since=format_datetime(since) if since else None
+                    since=format_datetime(since) if since else None,
+                    until=format_datetime(until) if until else None,
                 )
             print(
                 canonical_json(accounting_projection.to_dict())

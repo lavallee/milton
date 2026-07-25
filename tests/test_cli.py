@@ -64,6 +64,60 @@ def test_json_report_is_machine_readable(
     assert output["accounting"]["amounts_usd"]["raw_observed"] == "1.25"
 
 
+def _cost_at(store: MiltonStore, native_id: str, occurred: datetime, amount: str) -> None:
+    store.append_event(
+        NormalizedEvent.create(
+            source=SourceRef("test", native_id),
+            occurred_at=occurred,
+            recorded_at=occurred,
+            payload=CostPayload(Decimal(amount), 10, 2, 0, "p", "m"),
+        )
+    )
+
+
+def test_report_and_accounting_honor_an_exclusive_until_window(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    store_path = tmp_path / "events.db"
+    with MiltonStore(store_path) as store:
+        _cost_at(store, "inside", datetime(2026, 7, 17, tzinfo=UTC), "1.00")
+        # Exactly on the exclusive bound: must be excluded.
+        _cost_at(store, "boundary", datetime(2026, 7, 18, tzinfo=UTC), "9.00")
+
+    window = ["--since", "2026-07-17T00:00:00Z", "--until", "2026-07-18T00:00:00Z"]
+
+    assert main(["report", "--store", str(store_path), "--format", "json", *window]) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report["event_count"] == 1
+    assert report["accounting"]["amounts_usd"]["raw_observed"] == "1.00"
+
+    assert main(["accounting", "--store", str(store_path), "--format", "json", *window]) == 0
+    accounting = json.loads(capsys.readouterr().out)
+    assert accounting["amounts_usd"]["raw_observed"] == "1.00"
+
+
+def test_report_rejects_an_until_at_or_before_since(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    store_path = tmp_path / "events.db"
+    with MiltonStore(store_path) as store:
+        _cost_at(store, "one", datetime(2026, 7, 17, tzinfo=UTC), "1.00")
+
+    code = main(
+        [
+            "report",
+            "--store",
+            str(store_path),
+            "--since",
+            "2026-07-18T00:00:00Z",
+            "--until",
+            "2026-07-17T00:00:00Z",
+        ]
+    )
+    assert code == 1
+    assert "--since must be earlier than --until" in capsys.readouterr().err
+
+
 def test_accounting_command_exposes_cost_semantics(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
