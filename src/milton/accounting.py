@@ -183,6 +183,30 @@ def select_cost_events(events: Iterable[NormalizedEvent]) -> tuple[NormalizedEve
     return _select_accounting(events).selected
 
 
+def select_token_events(events: Iterable[NormalizedEvent]) -> tuple[NormalizedEvent, ...]:
+    """Return one representative cost observation per billable unit for token roll-up.
+
+    Token counts are a fact distinct from a dollar amount. An observation whose
+    amount is unavailable still carries recovered usage — docs/accounting.md is
+    explicit that "Milton retains tokens but projects the dollar amount as
+    unavailable" — so it is kept here even though monetary selection drops it.
+    Rollups are still excluded because they summarize child-call tokens, and
+    exact duplicates of the same billable unit collapse to one representative
+    (chosen by the same precedence) so tokens are not double-counted across
+    sources.
+    """
+
+    groups: dict[tuple[str, CostKind], list[NormalizedEvent]] = {}
+    for event in events:
+        if event.kind is not EventKind.COST or not isinstance(event.payload, CostPayload):
+            continue
+        payload = event.payload
+        if payload.observation_role is CostObservationRole.ROLLUP:
+            continue
+        groups.setdefault((_group_key(event, payload), payload.kind), []).append(event)
+    return tuple(sorted(group, key=_precedence_key)[0] for _, group in sorted(groups.items()))
+
+
 def build_accounting(events: Iterable[NormalizedEvent]) -> AccountingProjection:
     selection = _select_accounting(events)
     observations = selection.observations
@@ -231,17 +255,13 @@ def _select_accounting(events: Iterable[NormalizedEvent]) -> _AccountingSelectio
     shared = source_local = unknown = 0
     for event in observations:
         payload = _cost_payload(event)
-        group_key: str
         if payload.accounting_key and payload.accounting_key_scope is CostKeyScope.SHARED:
             shared += 1
-            group_key = f"shared\0{payload.accounting_key}"
         elif payload.accounting_key and payload.accounting_key_scope is CostKeyScope.SOURCE:
             source_local += 1
-            group_key = f"source\0{event.source.adapter}\0{payload.accounting_key}"
         else:
             unknown += 1
-            group_key = f"event\0{event.event_id}"
-        groups.setdefault((group_key, payload.kind), []).append(event)
+        groups.setdefault((_group_key(event, payload), payload.kind), []).append(event)
 
     selected: list[NormalizedEvent] = []
     decisions: list[AccountingDecision] = []
@@ -277,6 +297,21 @@ def _select_accounting(events: Iterable[NormalizedEvent]) -> _AccountingSelectio
         source_local=source_local,
         unknown=unknown,
     )
+
+
+def _group_key(event: NormalizedEvent, payload: CostPayload) -> str:
+    """Exact-key group identity shared by monetary and token selection.
+
+    A shared key groups across adapters; a source-local key groups only within
+    its own adapter; a missing or unknown key never groups, so the event is its
+    own group and is never suppressed against another observation.
+    """
+
+    if payload.accounting_key and payload.accounting_key_scope is CostKeyScope.SHARED:
+        return f"shared\0{payload.accounting_key}"
+    if payload.accounting_key and payload.accounting_key_scope is CostKeyScope.SOURCE:
+        return f"source\0{event.source.adapter}\0{payload.accounting_key}"
+    return f"event\0{event.event_id}"
 
 
 def _precedence_key(event: NormalizedEvent) -> tuple[int, int, str, str]:
