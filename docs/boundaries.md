@@ -95,7 +95,7 @@ The boundary is defined by corpus and decision:
 
 - **Projector** interprets external developments, evaluates their relevance to
   the portfolio, recommends bounded experiments, and calibrates adoption from
-  promotions and outcomes. Flip/Keel/Cistern remain canonical for its evidence
+  promotions and outcomes. Flip and the deployment custody stores remain canonical for its evidence
   and claims.
 - **Milton** measures internal operational exhaust: sessions, attempts, costs,
   outcomes, failures, memory use, and repeated work shapes.
@@ -103,7 +103,7 @@ The boundary is defined by corpus and decision:
 Projector can carry stable recommendation/experiment/promotion ids into
 George/Fab. Milton can later return a versioned outcome or finding projection
 for calibration. Projector does not build another session-log clusterer or
-cross-source cost calculator; Milton does not copy Projector/Flip/Keel claims
+cross-source cost calculator; Milton does not copy Projector/Flip claims
 or become an external technology scout.
 
 ## milton ↔ George

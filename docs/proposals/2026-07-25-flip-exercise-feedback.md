@@ -138,7 +138,7 @@ redefinition of it:
 - Working directory is already recovered structural metadata; no new content is
   stored.
 - Coverage output distinguishes locational filtering from ownership scoping so
-  a path filter can never be mistaken for a Keel-style denominator.
+  a path filter can never be mistaken for a producer-declared outcome denominator.
 
 ### Non-goals
 

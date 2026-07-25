@@ -35,8 +35,7 @@ and quick-turn research discipline:
 1. **Competitive scan:** current semantic synthesis, local coding-log analysis,
    cost-per-outcome, and memory-hygiene offerings.
 2. **Complement map:** authoritative boundaries and smallest integration
-   contracts across Projector, Flip, George, Fab, Forge, Chip, Spindle, and
-   Keel.
+   contracts across Projector, Flip, George, Fab, Forge, Chip, and Spindle.
 3. **Somm audit:** current hot-path/accounting/eval/recommendation behavior,
    duplication/gap risks, and a retain/narrow/delegate/deprecate decision.
 
@@ -83,7 +82,7 @@ verified offering combining Milton's full evidence-to-action contract.**
 ## Complementary local system map
 
 ```text
-external sources -> Flip/Keel custody -> Projector recommendation
+external sources -> Flip custody -> Projector recommendation
                                            |
                                            v
 George intent/commission -> Fab run -> Somm attempt/call
@@ -99,7 +98,7 @@ Forge plans and commissions work; it is not canonical runtime evidence.
 
 | System | Canonical responsibility | Milton contract | Duplication avoided |
 | --- | --- | --- | --- |
-| Projector | External evidence interpretation, portfolio relevance, adoption recommendation, experiment/promotion calibration | Ingest stable recommendation/experiment/promotion ids; return versioned measured outcomes/findings | Projector does not build another session clusterer or cost projection; Milton does not copy claims/Keel/Flip evidence |
+| Projector | External evidence interpretation, portfolio relevance, adoption recommendation, experiment/promotion calibration | Ingest stable recommendation/experiment/promotion ids; return versioned measured outcomes/findings | Projector does not build another session clusterer or cost projection; Milton does not copy claims/Flip evidence |
 | Flip | Source/claim/decision custody and negative evidence | Optional immutable finding export captured by source digest | No independently edited finding copy |
 | George | Intent, work hierarchy, decisions, gates, guarded action, disposition | Finding candidate in; decision/action receipt out; outcome hierarchy in | George displays Milton projection rather than recomputing cross-source cost; Milton never acts directly |
 | Fab | Persistent jobs/attempts, leases, retries, verification, artifacts, terminal reason | Stable receipt ids and directed relations in | Fab rollups reference child accounting ids and never become new spend |
@@ -107,7 +106,6 @@ Forge plans and commissions work; it is not canonical runtime evidence.
 | Chip | Procedure-candidate schema and mint lifecycle | Idempotent candidate projection in; lifecycle receipt out | Milton finding stays canonical; candidate is interop projection |
 | Spindle | Skill/package composition, held-out evaluation, distribution, binding | Milton origin and fixture refs in; evaluation/promotion/binding receipts out | Milton never optimizes or binds |
 | Forge | Vision/orientation/architecture/roadmap/itemization/commission procedure | Consumes current reality and findings to plan work | No runtime evidence or recurrence ledger competing with Milton |
-| Keel | Bounded deep research and research-task outcomes | Stable campaign/thread/task outcome ids only when performance accounting needs them | Milton does not ingest Keel's knowledge corpus as session findings |
 
 ## Somm deep audit
 
