@@ -7,7 +7,12 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal
 
-from milton.accounting import AccountingProjection, build_accounting, select_cost_events
+from milton.accounting import (
+    AccountingProjection,
+    build_accounting,
+    select_cost_events,
+    select_token_events,
+)
 from milton.model import (
     CostPayload,
     CoverageStatus,
@@ -181,11 +186,20 @@ def build_report(
             cost_events.append(event)
 
     accounting = build_accounting(cost_events)
+    # Monetary roll-up follows accounting selection: one priced amount per exact
+    # billable unit, amount-unavailable observations excluded.
     for event in select_cost_events(cost_events):
         payload = event.payload
         assert isinstance(payload, CostPayload)
         adapter = adapters[event.source.adapter]
         adapter.cost_usd += payload.amount_usd or Decimal(0)
+    # Token roll-up is a separate fact from a dollar amount: it must include
+    # observations whose amount is unavailable but whose usage was recovered
+    # (docs/accounting.md), while still de-duplicating exact billable units.
+    for event in select_token_events(cost_events):
+        payload = event.payload
+        assert isinstance(payload, CostPayload)
+        adapter = adapters[event.source.adapter]
         adapter.input_tokens += payload.input_tokens or 0
         adapter.output_tokens += payload.output_tokens or 0
         adapter.cached_input_tokens += payload.cached_input_tokens or 0
