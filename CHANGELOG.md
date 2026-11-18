@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Import explicit Pi v3 session files for metadata-only call and usage accounting. Fab job attribution follows exact receipt relations.
+
 - A dependency-free, explicit-source-only `barnowl.research-outcome/v1`
   adapter with strict private-safe validation and exact Somm-call cost
   attribution. The existing outcome precedence order is unchanged; the new

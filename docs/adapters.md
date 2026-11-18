@@ -23,6 +23,7 @@ private ledger unless the operator supplies an explicit source path.
 | `native-memory` | current checkout; override with factory roots | metadata-only inventory of `AGENTS.md`, `CLAUDE.md`, `MEMORY.md`, rule files, and `SKILL.md`; optional versioned host access rows |
 | `decision-memory` | current checkout; override with decision-store roots | metadata-only `decisions/*.md` inventory and optional versioned host access rows |
 | `opencode` | `~/.local/share/opencode/opencode.db` | sessions, typed parts, model usage, tool calls and cost |
+| `pi` | none; explicit `--source pi=PATH` required | Pi v3 session, assistant call status, and native usage observations |
 | `somm` | `~/.somm/global.sqlite` | mediated production/gold/judge calls, cost/custody provenance, eval and campaign receipts, decisions, recommendations, late updates, and exact joins |
 | `spindle` | `$MILTON_SPINDLE_RECEIPTS` or `$SPINDLE_HOME/receipts` | procedure evaluation and promotion receipts with exact Milton/Chip origin, baseline/variant tuple, and evaluated binding |
 
@@ -31,6 +32,26 @@ Every cost event distinguishes amount `basis` (`reported`, `computed`, or
 and `accuracy` (`actual`, `estimated`, or `unknown`). “Reported” means the
 upstream artifact supplied the amount; it does not by itself claim that a
 provider invoice supplied it. See [accounting](accounting.md).
+
+## Pi session accounting
+
+To import a selected file or directory, run `milton ingest pi --source pi=PATH`.
+Milton reads v3 JSONL session files and retains metadata even with `--content full`.
+Each assistant call and usage entry uses its native session and entry IDs. Fab
+attribution requires a producer relation naming that exact Pi session. The
+response ID alone supplies no cross-provider accounting join.
+
+Pi reports cached reads and writes separately. Reasoning tokens are a subset of
+output. A monetary total explicitly flagged `totalFromProvider` is provider
+reported, including a reported zero. A positive catalog total is an estimate.
+An unflagged zero leaves the amount unknown. Usage for cache warming,
+compaction and branch summaries is kept when present. Pending/deferred messages
+do not supply completed calls. A fork can contain copies of its parent's entries;
+the adapter imports its session metadata and issues a diagnostic. This can
+undercount work unique to the fork.
+
+See the upstream [Pi session format](https://github.com/earendil-works/pi/blob/05fd3fbda0bbb9a1c7a76e4bf92ab58ed77c8d94/packages/coding-agent/docs/session-format.md)
+and [usage fields](https://github.com/earendil-works/pi/blob/05fd3fbda0bbb9a1c7a76e4bf92ab58ed77c8d94/packages/ai/src/types.ts#L467-L495).
 
 ## Current coverage limits
 

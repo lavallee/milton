@@ -156,6 +156,7 @@ _REFERENCE_EVENT_MAP: dict[str, tuple[str, EventKind]] = {
     "git.commit-instance": ("git", EventKind.OUTCOME),
     "hermes.session": ("hermes", EventKind.SESSION),
     "opencode.session": ("opencode", EventKind.SESSION),
+    "pi.session": ("pi", EventKind.SESSION),
     "somm.call": ("somm", EventKind.MODEL_CALL),
     "somm.call-update": ("somm", EventKind.OUTCOME),
     "somm.campaign": ("somm", EventKind.OUTCOME),

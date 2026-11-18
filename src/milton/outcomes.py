@@ -692,11 +692,13 @@ def _relation_supports_attribution(relation: RelationRecord) -> bool:
             ("fab.job", "codex.session"),
             ("fab.job", "claude-code.session"),
             ("fab.job", "opencode.session"),
+            ("fab.job", "pi.session"),
             ("fab.attempt", "somm.call"),
             ("fab.attempt", "git.commit"),
             ("fab.attempt", "codex.session"),
             ("fab.attempt", "claude-code.session"),
             ("fab.attempt", "opencode.session"),
+            ("fab.attempt", "pi.session"),
         }
     if relation.predicate is RelationKind.VERIFIES:
         return pair in {
@@ -820,6 +822,7 @@ def _event_ref(event: NormalizedEvent) -> TypedRef | None:
             "fab": "fab.job",
             "hermes": "hermes.session",
             "opencode": "opencode.session",
+            "pi": "pi.session",
             "somm": "somm.session",
         }
         namespace = namespaces.get(event.source.adapter)

@@ -584,6 +584,7 @@ def find_corroborating_receipts(
         "fab": "fab.job",
         "hermes": "hermes.session",
         "opencode": "opencode.session",
+        "pi": "pi.session",
     }
     result: dict[str, tuple[str, ...]] = {}
     for facet in facets:
