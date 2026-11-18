@@ -111,7 +111,7 @@ class FabAdapter:
                             raise ValueError("record is not an object")
                         timestamp = parse_datetime(str(raw["ts"]))
                         event_type = str(raw["event"])
-                        job_id = str(raw["job_id"])
+                        job_id = _required_string(raw, "job_id")
                     except (json.JSONDecodeError, KeyError, TypeError, ValueError) as error:
                         stats.malformed_records += 1
                         stats.warn("malformed-ledger-record", str(error), source, line_number)
@@ -309,6 +309,24 @@ def _protected_text(value: object, policy: ContentPolicy) -> JsonValue:
     return protected if policy is ContentPolicy.FULL else metadata
 
 
+def _required_string(raw: dict[str, object], key: str) -> str:
+    value = raw.get(key)
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"missing or invalid Fab {key}")
+    return value
+
+
+def _receipt_header(raw: object) -> tuple[str, str, str, datetime]:
+    if not isinstance(raw, dict) or raw.get("schema") != _RECEIPT_SCHEMA:
+        raise ValueError("unsupported Fab receipt schema")
+    return (
+        _required_string(raw, "receipt_id"),
+        _required_string(raw, "kind"),
+        _required_string(raw, "job_id"),
+        parse_datetime(_required_string(raw, "occurred_at")),
+    )
+
+
 def _receipt_coverage(root: Path) -> set[tuple[str, str]]:
     coverage: set[tuple[str, str]] = set()
     jobs = root / "jobs"
@@ -317,13 +335,8 @@ def _receipt_coverage(root: Path) -> set[tuple[str, str]]:
     for path in jobs.glob("*/receipts/*.json"):
         try:
             raw = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            continue
-        if not isinstance(raw, dict) or raw.get("schema") != _RECEIPT_SCHEMA:
-            continue
-        job_id = string_or_none(raw.get("job_id"))
-        kind = string_or_none(raw.get("kind"))
-        if job_id is None or kind is None:
+            _, kind, job_id, _ = _receipt_header(raw)
+        except (OSError, ValueError):
             continue
         if kind == "attempt_finished":
             attempt_index = _integer(raw.get("attempt_idx"))
@@ -355,15 +368,8 @@ def _read_execution_receipt(
         stats.source_records += 1
         try:
             raw = json.loads(source.read_text(encoding="utf-8"))
-            if not isinstance(raw, dict):
-                raise ValueError("receipt is not an object")
-            if raw.get("schema") != _RECEIPT_SCHEMA:
-                raise ValueError("unsupported Fab receipt schema")
+            receipt_id, kind, job_id, timestamp = _receipt_header(raw)
             receipt = cast(dict[str, object], raw)
-            receipt_id = str(receipt["receipt_id"])
-            kind = str(receipt["kind"])
-            job_id = str(receipt["job_id"])
-            timestamp = parse_datetime(str(receipt["occurred_at"]))
         except (OSError, json.JSONDecodeError, KeyError, TypeError, ValueError) as error:
             stats.malformed_records += 1
             stats.warn("malformed-execution-receipt", str(error), source)
