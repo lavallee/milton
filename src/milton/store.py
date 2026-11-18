@@ -8,6 +8,7 @@ import sqlite3
 import tempfile
 from collections import deque
 from collections.abc import Iterable, Iterator
+from contextlib import contextmanager, nullcontext
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
@@ -252,11 +253,20 @@ class MiltonStore:
     def __exit__(self, *_: object) -> None:
         self.close()
 
+    @contextmanager
+    def write_batch(self) -> Iterator[None]:
+        """Commit a bounded set of appends together, rolling it back on failure."""
+        if self._connection.in_transaction:
+            raise RuntimeError("write_batch must own its transaction")
+        with self._connection:
+            self._connection.execute("BEGIN IMMEDIATE")
+            yield
+
     def append_event(self, event: NormalizedEvent) -> bool:
         """Append an event, returning false for an exact idempotent replay."""
 
         document = canonical_json(event.to_dict())
-        with self._connection:
+        with nullcontext() if self._connection.in_transaction else self._connection:
             existing = self._connection.execute(
                 "SELECT document_json FROM events WHERE event_id = ?", (event.event_id,)
             ).fetchone()
@@ -605,7 +615,7 @@ class MiltonStore:
         """Append one join revision, enforcing a linear and inspectable history."""
 
         document = canonical_json(record.to_dict())
-        with self._connection:
+        with nullcontext() if self._connection.in_transaction else self._connection:
             existing = self._connection.execute(
                 "SELECT document_json FROM crosswalk_records WHERE record_id = ?",
                 (record.record_id,),
@@ -688,7 +698,7 @@ class MiltonStore:
         """Append relation evidence, allowing corroboration before terminal refutation."""
 
         document = canonical_json(record.to_dict())
-        with self._connection:
+        with nullcontext() if self._connection.in_transaction else self._connection:
             existing = self._connection.execute(
                 "SELECT document_json FROM relation_records WHERE record_id = ?",
                 (record.record_id,),

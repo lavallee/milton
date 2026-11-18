@@ -5,6 +5,8 @@ of them by default; `milton scan codex fab git` limits a pass. Every emitted
 field declares recovered, inferred, unavailable, or redacted coverage, and a
 source failure is recorded without stopping the other adapters.
 
+A scan buffers up to 256 normalized records before taking the SQLite writer lock. Each batch commits together. If a row conflicts, the batch rolls back and Milton reapplies its valid prefix. The failed source stays eligible for retry, and other sources can continue.
+
 The Fab and Barnowl adapters are format readers, not package integrations.
 Milton imports or installs neither producer. Barnowl research outcomes are even
 more narrowly bounded: the adapter has no default root and cannot discover a
