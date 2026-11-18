@@ -289,3 +289,24 @@ def test_fab_receipts_trace_exactly_and_rollups_do_not_count(tmp_path: Path) -> 
             roots={"fab": [fab_root], "somm": [somm_path]},
         )
         assert all(summary.sources_unchanged for summary in second.adapters)
+
+
+def test_invalid_identity_preserves_valid_ledger_evidence(tmp_path: Path) -> None:
+    timestamp = "2026-09-17T10:00:00Z"
+    valid = {"ts": timestamp, "job_id": JOB, "event": "submitted"}
+    (tmp_path / "ledger.jsonl").write_text(
+        "\n".join(json.dumps(row) for row in (valid, {**valid, "job_id": None}))
+    )
+    for field, value in (("receipt_id", " "), ("job_id", None), ("occurred_at", "invalid")):
+        _write_receipt(tmp_path, field + ".json", {
+            "receipt_id": "receipt", "job_id": JOB, "kind": "job_submitted",
+            "occurred_at": timestamp, field: value,
+        })
+
+    with MiltonStore(tmp_path / "events.db") as store:
+        summary = Ingestor(store).run([FabAdapter()], roots={"fab": [tmp_path]})
+        assert summary.adapters[0].malformed_records == 4
+        events = list(store.events())
+        assert len(events) == 1
+        assert events[0].source.native_id == JOB
+        assert "receipt_id" not in events[0].attributes
