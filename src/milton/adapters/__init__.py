@@ -11,25 +11,11 @@ from milton.adapters.git import GitAdapter
 from milton.adapters.hermes import HermesAdapter
 from milton.adapters.memory_files import DecisionMemoryAdapter, NativeMemoryAdapter
 from milton.adapters.opencode import OpenCodeAdapter
+from milton.adapters.pi import PiAdapter
 from milton.adapters.somm import SommAdapter
 from milton.adapters.spindle import SpindleAdapter
 
-BUILTIN_ADAPTERS: dict[
-    str,
-    type[ClaudeCodeAdapter]
-    | type[BarnowlResearchOutcomeAdapter]
-    | type[ChipAdapter]
-    | type[CodexAdapter]
-    | type[FabAdapter]
-    | type[GeorgeAdapter]
-    | type[GitAdapter]
-    | type[HermesAdapter]
-    | type[NativeMemoryAdapter]
-    | type[DecisionMemoryAdapter]
-    | type[OpenCodeAdapter]
-    | type[SommAdapter]
-    | type[SpindleAdapter],
-] = {
+BUILTIN_ADAPTERS: dict[str, type[SourceAdapter]] = {
     "barnowl-research-outcome": BarnowlResearchOutcomeAdapter,
     "claude-code": ClaudeCodeAdapter,
     "chip": ChipAdapter,
@@ -41,6 +27,7 @@ BUILTIN_ADAPTERS: dict[
     "native-memory": NativeMemoryAdapter,
     "decision-memory": DecisionMemoryAdapter,
     "opencode": OpenCodeAdapter,
+    "pi": PiAdapter,
     "somm": SommAdapter,
     "spindle": SpindleAdapter,
 }
@@ -65,6 +52,7 @@ __all__ = [
     "NativeMemoryAdapter",
     "DecisionMemoryAdapter",
     "OpenCodeAdapter",
+    "PiAdapter",
     "SommAdapter",
     "SpindleAdapter",
     "SourceAdapter",
