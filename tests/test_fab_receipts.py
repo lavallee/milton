@@ -35,10 +35,17 @@ def test_invalid_identity_preserves_valid_ledger_evidence(tmp_path: Path) -> Non
         "\n".join(json.dumps(row) for row in (valid, {**valid, "job_id": None}))
     )
     for field, value in (("receipt_id", " "), ("job_id", None), ("occurred_at", "invalid")):
-        _write_receipt(tmp_path, field + ".json", {
-            "receipt_id": "receipt", "job_id": JOB, "kind": "job_submitted",
-            "occurred_at": timestamp, field: value,
-        })
+        _write_receipt(
+            tmp_path,
+            field + ".json",
+            {
+                "receipt_id": "receipt",
+                "job_id": JOB,
+                "kind": "job_submitted",
+                "occurred_at": timestamp,
+                field: value,
+            },
+        )
 
     with MiltonStore(tmp_path / "events.db") as store:
         summary = Ingestor(store).run([FabAdapter()], roots={"fab": [tmp_path]})
