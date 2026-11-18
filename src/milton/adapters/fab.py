@@ -43,6 +43,11 @@ from milton.relations import (
 )
 
 _TERMINAL_STATUSES = {"succeeded", "failed", "escalated", "cancelled"}
+_TRANSCRIPT_NAMESPACES = {
+    "claude-cli": "claude-code.session",
+    "codex": "codex.session",
+    "opencode": "opencode.session",
+}
 _RECEIPT_SCHEMA = "fab.execution-receipt/v1"
 
 
@@ -66,7 +71,7 @@ class FabAdapter:
                     candidates.extend(
                         stdout
                         for stdout in jobs.glob("*/attempts/*/stdout")
-                        if _supported_receipt(stdout) and not _has_exact_attempt_receipt(stdout)
+                        if _needs_transcript(stdout)
                     )
             for candidate in candidates:
                 if candidate.is_file() and candidate.resolve() not in seen:
@@ -319,10 +324,16 @@ def _required_string(raw: dict[str, object], key: str) -> str:
 def _receipt_header(raw: object) -> tuple[str, str, str, datetime]:
     if not isinstance(raw, dict) or raw.get("schema") != _RECEIPT_SCHEMA:
         raise ValueError("unsupported Fab receipt schema")
+    job_id = _required_string(raw, "job_id")
+    kind = _required_string(raw, "kind")
+    if kind == "attempt_finished":
+        index = _integer(raw.get("attempt_idx"))
+        if index is None or index < 0 or raw.get("attempt_id") != f"{job_id}:attempt:{index}":
+            raise ValueError("invalid Fab attempt coordinate")
     return (
         _required_string(raw, "receipt_id"),
-        _required_string(raw, "kind"),
-        _required_string(raw, "job_id"),
+        kind,
+        job_id,
         parse_datetime(_required_string(raw, "occurred_at")),
     )
 
@@ -347,13 +358,27 @@ def _receipt_coverage(root: Path) -> set[tuple[str, str]]:
     return coverage
 
 
-def _has_exact_attempt_receipt(stdout: Path) -> bool:
-    try:
-        attempt_index = int(stdout.parent.name)
-    except ValueError:
+def _needs_transcript(stdout: Path) -> bool:
+    backend = string_or_none(_receipt_spec(stdout).get("backend"))
+    if backend not in _TRANSCRIPT_NAMESPACES:
         return False
-    receipts = stdout.parents[2] / "receipts"
-    return (receipts / f"attempt-{attempt_index}-finished.json").is_file()
+    job = stdout.parents[2]
+    try:
+        index = int(stdout.parent.name)
+        path = job / "receipts" / f"attempt-{index}-finished.json"
+        raw = json.loads(path.read_bytes())
+        receipt_id, kind, job_id, timestamp = _receipt_header(raw)
+    except (OSError, ValueError):
+        return True
+    attempt = TypedRef("fab.attempt", f"{job.name}:attempt:{index}")
+    if kind != "attempt_finished" or job_id != job.name or raw.get("attempt_id") != attempt.value:
+        return True
+    return not any(
+        rel.subject == attempt
+        and rel.predicate is RelationKind.PRODUCED
+        and rel.object.namespace == _TRANSCRIPT_NAMESPACES[backend]
+        for rel in _receipt_relations(raw, receipt_id, timestamp, kind=kind)
+    )
 
 
 def _read_execution_receipt(
@@ -670,11 +695,6 @@ def _decimal_or_none(value: object) -> Decimal | None:
     return amount if amount >= 0 else None
 
 
-def _supported_receipt(stdout: Path) -> bool:
-    spec = _receipt_spec(stdout)
-    return string_or_none(spec.get("backend")) in {"claude-cli", "codex", "opencode"}
-
-
 def _receipt_spec(stdout: Path) -> dict[str, object]:
     try:
         raw = json.loads((stdout.parents[2] / "spec.json").read_text(encoding="utf-8"))
@@ -704,7 +724,7 @@ def _read_attempt_receipt(source: Path, *, since: datetime | None) -> SourceRead
         if since is not None and modified_at < since:
             stats.skipped_records += 1
             return
-        if backend not in {"claude-cli", "codex", "opencode"}:
+        if backend not in _TRANSCRIPT_NAMESPACES:
             stats.skipped_records += 1
             return
 
@@ -734,11 +754,7 @@ def _read_attempt_receipt(source: Path, *, since: datetime | None) -> SourceRead
         if session_id is None:
             stats.warn("session-id-unavailable", f"no {backend} session id found", source)
             return
-        namespace = {
-            "claude-cli": "claude-code.session",
-            "codex": "codex.session",
-            "opencode": "opencode.session",
-        }[backend]
+        namespace = _TRANSCRIPT_NAMESPACES[backend]
         crosswalk = CrosswalkRecord.create(
             left=ExternalIdentity("fab.job", job_id),
             right=ExternalIdentity(namespace, session_id),
