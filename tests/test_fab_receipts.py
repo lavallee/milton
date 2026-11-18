@@ -317,3 +317,37 @@ def test_fab_receipts_trace_exactly_and_rollups_do_not_count(tmp_path: Path) -> 
             roots={"fab": [fab_root], "somm": [somm_path]},
         )
         assert all(summary.sources_unchanged for summary in second.adapters)
+
+
+def test_only_an_exact_session_relation_displaces_the_legacy_transcript(tmp_path: Path) -> None:
+    job = tmp_path / "jobs" / JOB
+    output = job / "attempts" / "0" / "stdout"
+    output.parent.mkdir(parents=True)
+    output.write_text(json.dumps({"type": "thread.started", "thread_id": "native"}))
+    (job / "spec.json").write_text(json.dumps({"backend": "codex"}))
+    relation = {
+        "subject": {"namespace": "fab.attempt", "value": ATTEMPT},
+        "predicate": "produced",
+        "object": {"namespace": "codex.session", "value": "native"},
+    }
+    body: dict[str, object] = {
+        "kind": "attempt_finished",
+        "job_id": JOB,
+        "attempt_id": ATTEMPT,
+        "attempt_idx": 0,
+        "receipt_id": "finished",
+        "occurred_at": "2026-09-17T10:00:00Z",
+        "relations": [relation],
+    }
+    adapter = FabAdapter()
+    variants: list[dict[str, object]] = [
+        {"attempt_id": "wrong"},
+        {"relations": []},
+        {"kind": "job_outcome"},
+        {"relations": [{**relation, "object": {"namespace": "pi.session", "value": "other"}}]},
+    ]
+    for changes in variants:
+        _write_receipt(tmp_path, "attempt-0-finished.json", {**body, **changes})
+        assert output in list(adapter.discover([tmp_path]))
+    _write_receipt(tmp_path, "attempt-0-finished.json", body)
+    assert output not in list(adapter.discover([tmp_path]))
