@@ -1,3 +1,4 @@
+from collections.abc import Iterator
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
@@ -6,8 +7,11 @@ from pathlib import Path
 import pytest
 
 from milton.activity import build_activity
+from milton.adapters import ContentPolicy, PiAdapter
+from milton.adapters.base import AdapterRecord, ReadStats, SourceRead
 from milton.crosswalk import CrosswalkRecord, ExternalIdentity, JoinMethod, JoinState
 from milton.errors import RecordConflictError
+from milton.ingest import Ingestor
 from milton.model import (
     CostPayload,
     NormalizedEvent,
@@ -229,3 +233,46 @@ def test_report_filters_time_and_exposes_zero_event_adapter_coverage(tmp_path: P
     assert report.source_coverage["opencode"].status == "ok"
     assert report.source_coverage["opencode"].sources_read == 1
     assert "opencode: ok; 1 read" in report.to_text()
+
+
+@pytest.mark.parametrize("failure", ["conflict", "reader", "open"])
+def test_ingest_batches_preserve_prefix_and_retry_while_other_sources_continue(
+    tmp_path: Path,
+    failure: str,
+) -> None:
+    class BrokenSource(PiAdapter):
+        def read(
+            self,
+            source: Path,
+            *,
+            content_policy: ContentPolicy = ContentPolicy.METADATA,
+            since: datetime | None = None,
+            until: datetime | None = None,
+        ) -> SourceRead:
+            if source.stem == "a" and failure == "open":
+                raise OSError("unreadable")
+
+            def records() -> Iterator[AdapterRecord]:
+                if source.stem == "b":
+                    yield cost_event("neighbor")
+                    return
+                for index in range(258):
+                    yield cost_event(str(index))
+                if failure == "reader":
+                    raise OSError("read interrupted")
+                yield replace(cost_event("257"), occurred_at=NOW + timedelta(seconds=1))
+
+            return SourceRead(records(), ReadStats())
+
+    for name in ("a", "b"):
+        (tmp_path / f"{name}.jsonl").touch()
+    with MiltonStore(tmp_path / "store.db") as store:
+        ingestor = Ingestor(store)
+        first = ingestor.run([BrokenSource()], roots={"pi": [tmp_path]}).adapters[0]
+        assert first.sources_failed == 1 and first.sources_read == 1
+        assert first.events_inserted == (1 if failure == "open" else 259)
+        assert len(list(store.events())) == first.events_inserted
+        second = ingestor.run([BrokenSource()], roots={"pi": [tmp_path]}).adapters[0]
+        assert second.sources_failed == 1 and second.sources_unchanged == 1
+        assert second.events_inserted == 0
+        assert second.replayed == (0 if failure == "open" else 258)

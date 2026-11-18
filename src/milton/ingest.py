@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import cast
 
-from milton.adapters.base import ContentPolicy, SourceAdapter
+from milton.adapters.base import AdapterRecord, ContentPolicy, ReadStats, SourceAdapter
 from milton.crosswalk import CrosswalkRecord
 from milton.model import JsonValue, NormalizedEvent, canonical_json, format_datetime, utc_now
 from milton.relations import RelationRecord
@@ -143,35 +143,14 @@ class Ingestor:
                     summary.sources_unchanged += 1
                     continue
 
-                read = adapter.read(
-                    source,
-                    content_policy=content_policy,
-                    since=since,
-                    until=until,
-                )
+                stats = ReadStats()
                 source_failed = False
                 try:
-                    for record in read.records:
-                        record_time = (
-                            record.occurred_at
-                            if isinstance(record, NormalizedEvent)
-                            else record.recorded_at
-                        )
-                        if until is not None and record_time >= until:
-                            summary.records_outside_window += 1
-                            continue
-                        if isinstance(record, NormalizedEvent):
-                            inserted = self.store.append_event(record)
-                            summary.events_inserted += int(inserted)
-                        elif isinstance(record, CrosswalkRecord):
-                            inserted = self.store.append_crosswalk(record)
-                            summary.crosswalks_inserted += int(inserted)
-                        elif isinstance(record, RelationRecord):
-                            inserted = self.store.append_relation(record)
-                            summary.relations_inserted += int(inserted)
-                        else:  # pragma: no cover - protocol boundary defense
-                            raise TypeError(f"unsupported adapter record: {type(record)!r}")
-                        summary.replayed += int(not inserted)
+                    read = adapter.read(
+                        source, content_policy=content_policy, since=since, until=until
+                    )
+                    stats = read.stats
+                    self._ingest_records(read.records, summary, until)
                 except Exception as error:
                     source_failed = True
                     summary.sources_failed += 1
@@ -187,17 +166,17 @@ class Ingestor:
                 else:
                     summary.sources_read += 1
 
-                diagnostics = [asdict(item) for item in read.stats.diagnostics]
+                diagnostics = [asdict(item) for item in stats.diagnostics]
                 summary.diagnostics.extend(diagnostics)
-                summary.source_records += read.stats.source_records
-                summary.malformed_records += read.stats.malformed_records
+                summary.source_records += stats.source_records
+                summary.malformed_records += stats.malformed_records
                 self.store.record_source(
                     adapter=adapter.name,
                     source=source_key,
                     fingerprint=fingerprint,
                     status="error" if source_failed else "ok",
-                    records_seen=read.stats.source_records,
-                    records_emitted=read.stats.emitted_records,
+                    records_seen=stats.source_records,
+                    records_emitted=stats.emitted_records,
                     diagnostics=diagnostics,
                     ingested_at=format_datetime(utc_now()),
                 )
@@ -223,6 +202,72 @@ class Ingestor:
                 ingested_at=format_datetime(utc_now()),
             )
         return IngestSummary(tuple(summaries))
+
+    def _ingest_records(
+        self,
+        records: Iterator[AdapterRecord],
+        summary: AdapterIngestSummary,
+        until: datetime | None,
+    ) -> None:
+        # Read sources outside the transaction so a slow producer cannot hold
+        # the writer lock. Preserve a valid prefix even if the reader raises.
+        pending: list[AdapterRecord] = []
+        try:
+            for record in records:
+                pending.append(record)
+                if len(pending) == 256:
+                    batch, pending = pending, []
+                    self._append_batch(batch, summary, until)
+        finally:
+            if pending:
+                self._append_batch(pending, summary, until)
+
+    def _append_batch(
+        self,
+        records: list[AdapterRecord],
+        summary: AdapterIngestSummary,
+        until: datetime | None,
+    ) -> None:
+        try:
+            with self.store.write_batch():
+                delta = AdapterIngestSummary(summary.adapter)
+                for record in records:
+                    self._append_record(record, delta, until)
+        except Exception:
+            # Rollback was atomic. Reapply individually to keep the same
+            # valid prefix and precise first failure as a one-row-at-a-time scan.
+            if len(records) == 1:
+                raise
+            for record in records:
+                self._append_record(record, summary, until)
+            return
+        summary.events_inserted += delta.events_inserted
+        summary.crosswalks_inserted += delta.crosswalks_inserted
+        summary.relations_inserted += delta.relations_inserted
+        summary.replayed += delta.replayed
+        summary.records_outside_window += delta.records_outside_window
+
+    def _append_record(
+        self, record: AdapterRecord, summary: AdapterIngestSummary, until: datetime | None
+    ) -> None:
+        record_time = (
+            record.occurred_at if isinstance(record, NormalizedEvent) else record.recorded_at
+        )
+        if until is not None and record_time >= until:
+            summary.records_outside_window += 1
+            return
+        if isinstance(record, NormalizedEvent):
+            inserted = self.store.append_event(record)
+            summary.events_inserted += inserted
+        elif isinstance(record, CrosswalkRecord):
+            inserted = self.store.append_crosswalk(record)
+            summary.crosswalks_inserted += inserted
+        elif isinstance(record, RelationRecord):
+            inserted = self.store.append_relation(record)
+            summary.relations_inserted += inserted
+        else:
+            raise TypeError(f"unsupported adapter record: {type(record)!r}")
+        summary.replayed += not inserted
 
 
 def source_fingerprint(path: Path) -> str:
