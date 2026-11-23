@@ -12,14 +12,14 @@ Milton imports or installs neither producer. Barnowl research outcomes are even
 more narrowly bounded: the adapter has no default root and cannot discover a
 private ledger unless the operator supplies an explicit source path.
 
-| Adapter | Default Lisbon source | Recovered surface |
+| Adapter | Default source | Recovered surface |
 | --- | --- | --- |
 | `barnowl-research-outcome` | none; explicit `--source` required | metadata-only `barnowl.research-outcome/v1` outcomes, their exact attempt/correlation/domain coordinates, and receipt-owned Somm call relations |
 | `claude-code` | `~/.claude/projects/**/*.jsonl` | sessions and subagents, turns, streamed model usage, paired tools |
 | `chip` | `candidate-receipts*.jsonl` (override with `MILTON_CHIP_RECEIPTS`) | bounded candidate custody outcomes plus exact finding-revision origin and receipt verification relations |
 | `codex` | `~/.codex/sessions/**/rollout-*.jsonl` | sessions, turns, tools, token usage, task completion |
 | `fab` | `~/.local/share/fab/jobs/*/receipts/*.json`, with legacy ledger/stdout fallback | source custody, job/attempt outcomes, rollups, verifier/artifact receipts, and exact native coordinates |
-| `george` | `$GEORGE_CENTRAL_DIR/.george/inbox` or Lisbon's sibling `Central` checkout | work lifecycle outcomes, gate mint/consult/decision/disposition evidence, and George entry → Fab/Git/session joins |
+| `george` | `$GEORGE_CENTRAL_DIR/.george/inbox` or a sibling `Central` checkout | work lifecycle outcomes, gate mint/consult/decision/disposition evidence, and George entry → Fab/Git/session joins |
 | `git` | `$MILTON_PROJECTS_ROOT`, `$GEORGE_PROJECTS_ROOT`, or the detected projects root | commits across all refs, parents, repository identity |
 | `hermes` | `~/.hermes/state.db` | sessions, turns, model/tool calls, actual or marked-estimated session cost |
 | `native-memory` | current checkout; override with factory roots | metadata-only inventory of `AGENTS.md`, `CLAUDE.md`, `MEMORY.md`, rule files, and `SKILL.md`; optional versioned host access rows |

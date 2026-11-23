@@ -99,9 +99,9 @@ not a successful stale-gate product proof.
 
 ## Operational note
 
-The configured `GEORGE_SERVICE_URL` targets dash-main, whose running service did
+The configured `GEORGE_SERVICE_URL` targets the production George host, whose running service did
 not yet expose the new route and returned 404. The live contract check therefore
-used Lisbon's repository-backed interim George service against the canonical
+used the development host's repository-backed interim George service against the canonical
 Central inbox, then restored that service to its prior inactive state. The
 George change must be published/deployed before this intake is available on the
 production service; the receipt itself is already in the append-only George

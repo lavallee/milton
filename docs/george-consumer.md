@@ -54,7 +54,7 @@ objects. Global adapter freshness is available from
 `MiltonStore.source_coverage()` or the `source_coverage` section of
 `milton report --format json`.
 
-## Current joins on Lisbon
+## Current joins on the development host
 
 - George entries carrying `context.fab_job_id` join to `fab.job`.
 - Fab attempt receipts join a job to `codex.session`,

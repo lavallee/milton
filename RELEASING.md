@@ -33,7 +33,9 @@ The distribution name is `milton-ai`; the import package and CLI are both
    uv run pytest -q
    uv build
    uv run python scripts/release_smoke.py dist/milton_ai-*.whl
-   uvx --from pip-audit pip-audit . --strict --disable-pip
+   uv export --no-dev --no-emit-project --format requirements.txt --frozen \
+     --output-file requirements-audit.txt
+   uvx --from pip-audit pip-audit -r requirements-audit.txt --strict --no-deps --disable-pip
    uvx --from zizmor zizmor .github/workflows --offline \
      --min-severity high --min-confidence high
    ```
