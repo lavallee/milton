@@ -1,8 +1,9 @@
 import json
 from pathlib import Path
 
-from milton.adapters import ClaudeCodeAdapter, CodexAdapter, ContentPolicy
+from milton.adapters import ClaudeCodeAdapter, CodexAdapter, ContentPolicy, built_in_adapters
 from milton.crosswalk import CrosswalkRecord
+from milton.ingest import Ingestor
 from milton.model import (
     CostPayload,
     CoverageStatus,
@@ -319,3 +320,34 @@ def test_claude_adapter_skips_untimestamped_request_blobs(tmp_path: Path) -> Non
     assert read.stats.skipped_records == baseline.stats.skipped_records + 1
     # A real interaction without a timestamp is still malformed, not skipped.
     assert read.stats.malformed_records == baseline.stats.malformed_records + 1
+
+
+def test_claude_subagents_sharing_a_prompt_uuid_do_not_collide(tmp_path: Path) -> None:
+    root = tmp_path / "project" / "parent-session" / "subagents"
+    root.mkdir(parents=True)
+    for agent in ("agent-one", "agent-two"):
+        record = {
+            "type": "user",
+            "uuid": "shared-prompt-uuid",
+            "sessionId": "parent-session",
+            "agentId": agent,
+            "isSidechain": True,
+            "timestamp": "2026-11-18T19:29:38.378Z",
+            "cwd": "/work/project",
+            "message": {"role": "user", "content": "Investigate the failing test."},
+        }
+        (root / f"{agent}.jsonl").write_text(json.dumps(record) + "\n")
+
+    with MiltonStore(tmp_path / "events.db") as store:
+        summary = Ingestor(store).run(
+            built_in_adapters(["claude-code"]),
+            roots={"claude-code": [tmp_path / "project"]},
+            content_policy=ContentPolicy.METADATA,
+        )
+        turns = [event for event in store.events() if event.kind.value == "turn"]
+
+    assert not summary.failed
+    assert sorted(event.source.native_id for event in turns) == [
+        "message:parent-session:agent:agent-one:shared-prompt-uuid",
+        "message:parent-session:agent:agent-two:shared-prompt-uuid",
+    ]
