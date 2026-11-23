@@ -1,7 +1,7 @@
 # Boundaries: milton and its neighbors
 
 Milton sits in an ecosystem with a gateway (Somm), a runner (Fab), an intent
-and decision spine (George), an external-intelligence service (Projector), a
+and decision spine (George), an assessment skill for external artifacts (Yoinker), a
 component contract (Chip), a binding system (Spindle), and whatever harnesses
 people actually use. The boundaries below answer both “who is authoritative?”
 and “what document crosses the boundary?”
@@ -89,22 +89,27 @@ explicitly non-policy. Milton consumes that contract directly and still does
 not use fuzzy duplicate suppression. Campaign and recommendation totals are
 rollups over child facts, never new cost observations.
 
-## milton ↔ Projector
+## milton ↔ Yoinker
 
 The boundary is defined by corpus and decision:
 
-- **Projector** interprets external developments, evaluates their relevance to
-  the portfolio, recommends bounded experiments, and calibrates adoption from
-  promotions and outcomes. Flip and the deployment custody stores remain canonical for its evidence
-  and claims.
+- **Yoinker** is the skill an agent uses to assess an external tool, paper, or
+  practice against a named project. It produces a per-mechanism borrow, try,
+  track, or reject decision, kept as a record with the project it concerns,
+  and an outcome log on that record. It is not a service: nothing runs between
+  assessments, and it holds no store of its own.
 - **Milton** measures internal operational exhaust: sessions, attempts, costs,
   outcomes, failures, memory use, and repeated work shapes.
 
-Projector can carry stable recommendation/experiment/promotion ids into
-George/Fab. Milton can later return a versioned outcome or finding projection
-for calibration. Projector does not build another session-log clusterer or
-cross-source cost calculator; Milton does not copy Projector/Flip claims
-or become an external technology scout.
+A Yoinker record can name the experiment or change it led to. Milton can later
+return a versioned outcome or finding for that change, and the owner appends it
+to the record's outcome log. Milton does not copy Yoinker records or become an
+external technology scout; a Yoinker assessment does not cluster session logs
+or compute cross-source cost.
+
+Until November 2026 this boundary was with Projector, a private intelligence
+service that also owned source policy, portfolio relevance, and adoption
+calibration. Projector was retired. No Milton code depended on it.
 
 ## milton ↔ George
 

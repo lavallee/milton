@@ -183,9 +183,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for evidence-contract expectations and
 - Yoinker — the skill for assessing external artifacts and practices. Its
   decision records and outcome logs live with each owning project. Milton
   analyzes internal operational exhaust and returns later outcome evidence;
-  it does not copy those records. Yoinker replaced the retired Projector
-  service in November 2026; [boundaries](docs/boundaries.md) still describes
-  the Projector contract and is due a rewrite.
+  it does not copy those records. See [boundaries](docs/boundaries.md).
 - George — canonical intent, decisions, gates, and action disposition. The
   planned contract lets Milton emit findings and derive acted-on state from
   George receipts; Milton does not act on George directly.
