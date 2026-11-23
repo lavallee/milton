@@ -187,7 +187,8 @@ def test_serve_routes(served: str) -> None:
     status, body = _get(f"{served}/health")
     assert status == 200 and json.loads(body)["status"] == "ok"
     status, body = _get(f"{served}/")
-    assert status == 200 and "local-a" in body and "sum of host projections" in body
+    assert status == 200 and "local-a" in body and "Fleet (merged)" in body
+    assert "Notional (list)" in body and "Cost per outcome across hosts" in body
     status, body = _get(f"{served}/api/fleet.json")
     assert json.loads(body)["hosts"][0]["name"] == "local-a"
     status, body = _get(f"{served}/hosts/local-a")

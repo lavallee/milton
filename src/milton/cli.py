@@ -52,6 +52,7 @@ from milton.generators import (
 from milton.ingest import Ingestor
 from milton.model import JsonValue, canonical_json, format_datetime, utc_now
 from milton.outcomes import OUTCOME_PRECEDENCE
+from milton.pricing import PriceTable
 from milton.promotion import ProcedureCalibrationLedger, build_procedure_calibration
 from milton.relations import (
     RelationDirection,
@@ -95,6 +96,12 @@ def _parser() -> argparse.ArgumentParser:
     cost.add_argument("--since", help="select cost events at/after ISO timestamp or duration")
     cost.add_argument("--until", help="exclusive ISO8601 end for selected cost events")
     cost.add_argument("--outcome-type", action="append", choices=OUTCOME_PRECEDENCE, default=[])
+    cost.add_argument(
+        "--notional",
+        action="store_true",
+        help="also value unpriced usage at list price (kind=notional, never a charge)",
+    )
+    cost.add_argument("--prices", type=Path, help="price table JSON overriding the built-in")
     cost.add_argument("--format", choices=("text", "json"), default="text")
 
     effectiveness = subparsers.add_parser(
@@ -456,6 +463,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     since=format_datetime(since) if since else None,
                     until=format_datetime(until) if until else None,
                     outcome_types=tuple(args.outcome_type) or None,
+                    notional=_price_table(args.prices) if args.notional else None,
                 )
             print(
                 canonical_json(outcome_projection.to_dict())
@@ -625,6 +633,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 1
     parser.error(f"unknown command: {args.command}")
     return 2
+
+
+def _price_table(path: Path | None) -> PriceTable:
+    return PriceTable.from_file(path) if path else PriceTable.builtin()
 
 
 def _parse_sources(values: Sequence[str]) -> dict[str, list[Path]]:
