@@ -235,9 +235,13 @@ class ClaudeCodeAdapter:
                     if text:
                         role = string_or_none(message.get("role")) or string_or_none(record_type)
                         turn_payload, turn_coverage = text_turn(role, text, content_policy)
-                        native = (
-                            string_or_none(raw.get("uuid")) or f"{session_native_id}:{line_number}"
-                        )
+                        uuid = string_or_none(raw.get("uuid"))
+                        if uuid and agent_id:
+                            # Subagents fanned out from one prompt each start
+                            # with that prompt's uuid, so scope it to the agent.
+                            native = f"{session_native_id}:{uuid}"
+                        else:
+                            native = uuid or f"{session_native_id}:{line_number}"
                         turn = NormalizedEvent.create(
                             source=SourceRef(self.name, f"message:{native}", str(source)),
                             occurred_at=timestamp,

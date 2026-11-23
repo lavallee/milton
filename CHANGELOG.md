@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Claude Code subagents:** when one prompt fans out to several subagents,
+  each subagent transcript starts with that prompt's uuid. Turn identities were
+  keyed by the uuid alone, so the first subagent file claimed it and every
+  other file failed with an identity conflict. Subagent turns are now keyed by
+  their subagent session. Main-session turn identities are unchanged.
+
 - **Attribution performance:** outcome walks skip nodes that cannot reach any
   candidate outcome within the remaining depth, using one reverse
   breadth-first pass per projection. Walks to every outcome are unchanged
