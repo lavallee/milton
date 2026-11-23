@@ -15,22 +15,26 @@ import json
 import os
 import shlex
 import shutil
+import sqlite3
 import subprocess
 import tomllib
 from collections.abc import Callable, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime
+from functools import partial
 from pathlib import Path
 from typing import cast
 
 from milton.errors import MiltonError
 from milton.model import JsonValue, format_datetime, utc_now
+from milton.pricing import PriceTable, build_notional_summary
 from milton.store import MiltonStore
 
 SNAPSHOT_SCHEMA_VERSION = 1
 INDEX_SCHEMA_VERSION = 1
 LOCAL = "local"
+FLEET_NAME = "_fleet"
 _REMOTE_PATH = "$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 _STDERR_TAIL = 2000
 
@@ -86,7 +90,7 @@ def load_fleet_config(path: Path) -> FleetConfig:
         if not isinstance(entry, dict) or not isinstance(entry.get("name"), str):
             raise MiltonError("each [[hosts]] entry needs a string name")
         name = entry["name"]
-        if not name or "/" in name or name.startswith(".") or name in seen:
+        if not name or "/" in name or name.startswith((".", "_")) or name in seen:
             raise MiltonError(f"invalid or duplicate host name: {name!r}")
         seen.add(name)
         hosts.append(
@@ -263,30 +267,130 @@ def collect_fleet(
         "content_policy": "metadata",
         "hosts": [merged[host.name] for host in config.hosts if host.name in merged],
     }
+    collected = [
+        str(item["name"])
+        for item in index_hosts(index)
+        if (out_dir / str(item["name"]) / "events.db").exists()
+    ]
+    fleet: dict[str, JsonValue] = {"hosts": cast(JsonValue, collected)}
+    try:
+        merge_fleet(out_dir, collected, since=since)
+        fleet.update(status="ok", generated_at=format_datetime(utc_now()))
+    except (MiltonError, OSError, sqlite3.Error) as error:
+        fleet.update(status="error", error=str(error)[-_STDERR_TAIL:])
+    index["fleet"] = fleet
     _write_json(out_dir / "index.json", index)
     return index
 
 
-def build_snapshot(store_path: Path, *, since: datetime | None) -> dict[str, JsonValue]:
-    """Precompute the projections the dashboard renders for one store."""
+_OUTCOME_KEYS = ("amounts_usd", "denominators", "outcome_coverage", "reason_counts")
+
+
+def _outcome_summary(document: dict[str, JsonValue]) -> dict[str, JsonValue]:
+    return {key: document[key] for key in _OUTCOME_KEYS if key in document}
+
+
+def build_snapshot(
+    store_path: Path, *, since: datetime | None, prices: PriceTable | None = None
+) -> dict[str, JsonValue]:
+    """Precompute the projections the dashboard renders for one store.
+
+    ``outcomes`` attributes selected (priced) observations only. ``notional``
+    values the unpriced usage in the window at list price, and
+    ``notional_outcomes`` attributes priced plus notional amounts together.
+    """
 
     if not store_path.exists():
         raise MiltonError(f"event store does not exist: {store_path}")
+    table = prices or PriceTable.builtin()
     since_text = format_datetime(since) if since else None
     with MiltonStore(store_path, read_only=True) as store:
         report = store.report(since=since_text)
         outcomes = store.outcome_attribution(since=since_text).to_dict()
+        notional = build_notional_summary(store.events(since=since_text), table)
+        notional_outcomes = store.outcome_attribution(since=since_text, notional=table).to_dict()
     return {
         "schema_version": SNAPSHOT_SCHEMA_VERSION,
         "generated_at": format_datetime(utc_now()),
         "window": {"since": since_text},
         "report": report.to_dict(),
-        "outcomes": {
-            key: outcomes[key]
-            for key in ("amounts_usd", "denominators", "outcome_coverage", "reason_counts")
-            if key in outcomes
-        },
+        "outcomes": _outcome_summary(outcomes),
+        "notional": notional.to_dict(),
+        "notional_outcomes": _outcome_summary(notional_outcomes),
     }
+
+
+def merge_fleet(
+    out_dir: Path,
+    hosts: Sequence[str],
+    *,
+    since: datetime | None,
+    prices: PriceTable | None = None,
+) -> dict[str, JsonValue]:
+    """Rebuild the derived fleet store from host stores and snapshot it.
+
+    Host stores stay authoritative; the merged store is rebuilt from them on
+    every run and exists only so joins can cross hosts (for example an outcome
+    recorded on one machine and the session that produced it on another).
+    Exact replays are deduplicated by the store's identity rules. A record
+    whose identity conflicts across hosts is skipped and counted, never
+    overwritten.
+    """
+
+    fleet_dir = out_dir / FLEET_NAME
+    fleet_dir.mkdir(parents=True, exist_ok=True)
+    staging = fleet_dir / "events.db.incoming"
+    for suffix in ("", "-wal", "-shm"):
+        Path(f"{staging}{suffix}").unlink(missing_ok=True)
+    merge: dict[str, JsonValue] = {}
+    with MiltonStore(staging) as merged:
+        for host in hosts:
+            source = out_dir / host / "events.db"
+            if not source.exists():
+                continue
+            counts = {"events": 0, "duplicates": 0, "conflicts": 0, "links": 0}
+            with MiltonStore(source, read_only=True) as store:
+                with merged.write_batch():
+                    for event in store.events():
+                        try:
+                            inserted = merged.append_event(event)
+                        except MiltonError:
+                            counts["conflicts"] += 1
+                            continue
+                        counts["events" if inserted else "duplicates"] += 1
+                appends: list[Callable[[], bool]] = [
+                    partial(merged.append_crosswalk, crosswalk)
+                    for crosswalk in store.crosswalk_records()
+                ]
+                appends += [
+                    partial(merged.append_relation, relation)
+                    for relation in store.relation_records()
+                ]
+                for append in appends:
+                    try:
+                        counts["links"] += int(append())
+                    except MiltonError:
+                        counts["conflicts"] += 1
+            merge[host] = cast(JsonValue, counts)
+    snapshot = build_snapshot(staging, since=since, prices=prices)
+    for suffix in ("", "-wal"):
+        source_path = Path(f"{staging}{suffix}")
+        destination = fleet_dir / f"events.db{suffix}"
+        if source_path.exists():
+            os.replace(source_path, destination)
+        else:
+            destination.unlink(missing_ok=True)
+    Path(f"{staging}-shm").unlink(missing_ok=True)
+    (fleet_dir / "events.db-shm").unlink(missing_ok=True)
+    snapshot["host"] = FLEET_NAME
+    snapshot["merge"] = merge
+    _write_json(fleet_dir / "snapshot.json", snapshot)
+    return snapshot
+
+
+def index_hosts(index: dict[str, JsonValue]) -> list[dict[str, JsonValue]]:
+    hosts = index.get("hosts", [])
+    return [item for item in hosts if isinstance(item, dict)] if isinstance(hosts, list) else []
 
 
 def read_index(out_dir: Path) -> dict[str, JsonValue]:

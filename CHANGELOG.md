@@ -17,6 +17,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Notional valuation:** `milton cost --per-outcome --notional` values
+  unpriced usage (for example subscription coding-agent sessions) at public
+  list prices in memory, as `kind=notional`, `basis=computed`,
+  `accuracy=estimated` observations with a `pricing_version`. A built-in,
+  sourced price table covers current Anthropic and OpenAI models;
+  `--prices FILE` overrides it. Unknown models are counted, never guessed.
+  Stored events and the selected projection are unchanged.
+- **Cross-host joins:** fleet collection rebuilds a derived merged store from
+  host stores after every run and snapshots it, so cost per outcome can follow
+  relations across machines. Identity conflicts keep the first host's record
+  and are counted. The dashboard adds notional columns, a merged fleet row, and
+  a cross-host cost-per-outcome section. Host names beginning with `_` are
+  reserved.
+
 - Import explicit Pi v3 session files for metadata-only call and usage accounting. Fab job attribution follows exact receipt relations.
 - **Fleet collection:** `milton fleet collect --hosts MANIFEST` runs
   `milton scan` on each declared host (SSH, or `ssh = "local"`) under the

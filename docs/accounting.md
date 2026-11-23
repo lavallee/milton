@@ -118,3 +118,34 @@ rollups are always `observation_role=rollup`, `counting=false`, and enumerate
 known child accounting keys; they are excluded before selection. These are
 work-trace edges, not permission to collapse all calls in one job into a single
 accounting unit or to synthesize a provider request id.
+
+## Notional valuation of unpriced usage
+
+Subscription coding agents report tokens and a model but no amount, so their
+usage is `amount_unavailable` in this projection. `milton cost --per-outcome
+--notional` and the fleet snapshots also value that usage at public list
+prices.
+
+- Valuation happens in memory. Stored events are unchanged, and the selected
+  (priced) projection never includes a notional amount.
+- Each valued copy is `kind=notional`, `basis=computed`,
+  `accuracy=estimated`, with `amount_usd` coverage `inferred` and
+  `pricing_version` naming the table (`milton-list-prices/YYYY-MM-DD`).
+- Rollups and observations that already carry an amount are never revalued.
+- The built-in table (`milton.pricing`) lists standard-tier, short-context
+  prices per million tokens for input, cache read, cache write, and output,
+  with a source for each row. OpenAI reports cached tokens inside input
+  tokens; Anthropic reports them separately. The table records which rule
+  applies.
+- Long-context surcharges, priority or fast tiers, data-residency
+  multipliers, and batch discounts are not modeled. For those requests the
+  figure is a lower bound.
+- A model with no row is reported under `unvalued_models` with its count. It
+  is never guessed. `--prices FILE` supplies an operator table
+  (`{"version": ..., "models": [{"provider", "model", "input",
+  "cached_input", "cache_write", "output", "source"}]}`).
+
+Notional cost per outcome runs the same exact-relation attribution over
+priced plus notional observations. Its `amounts_usd` conservation holds for
+that combined total, and `by_kind` keeps marginal and notional amounts
+separate.

@@ -18,7 +18,7 @@ from typing import cast
 from urllib.parse import unquote, urlsplit
 
 from milton.findings import FindingLedger
-from milton.fleet import read_index, read_snapshot
+from milton.fleet import FLEET_NAME, read_index, read_snapshot
 from milton.model import JsonValue
 from milton.version import __version__
 
@@ -115,8 +115,30 @@ def fleet_summary(fleet_dir: Path) -> dict[str, JsonValue]:
                 "selected_cost_usd": cost,
                 "cost_events": observations.get("cost_events"),
                 "priced_cost_events": observations.get("with_amount"),
+                "notional_usd": _dict(snapshot.get("notional")).get("amount_usd")
+                if snapshot
+                else None,
                 "source_coverage": cast(JsonValue, coverage),
             }
+        )
+    fleet_entry = _dict(index.get("fleet"))
+    merged = read_snapshot(fleet_dir, FLEET_NAME)
+    fleet: dict[str, JsonValue] = {
+        "scope": "merged_store_rebuilt_from_host_stores",
+        "status": fleet_entry.get("status"),
+        "error": fleet_entry.get("error"),
+    }
+    if merged is not None:
+        merged_report = _dict(merged.get("report"))
+        fleet.update(
+            snapshot_at=merged.get("generated_at"),
+            event_count=merged_report.get("event_count"),
+            selected_cost_usd=merged_report.get("cost_usd"),
+            notional_usd=_dict(merged.get("notional")).get("amount_usd"),
+            pricing_version=_dict(merged.get("notional")).get("pricing_version"),
+            merge=merged.get("merge"),
+            outcomes=merged.get("outcomes"),
+            notional_outcomes=merged.get("notional_outcomes"),
         )
     return {
         "schema_version": 1,
@@ -130,6 +152,7 @@ def fleet_summary(fleet_dir: Path) -> dict[str, JsonValue]:
             "event_count": total_events,
             "selected_cost_usd": str(total_cost),
         },
+        "fleet": fleet,
     }
 
 
@@ -160,6 +183,7 @@ def _render_fleet(summary: dict[str, JsonValue], findings: dict[str, int] | None
             f'<td class="dim">{escape(_when(host.get("last_success_at")))}</td>'
             f'<td class="n">{_int(host.get("event_count"))}</td>'
             f'<td class="n">{_money(host.get("selected_cost_usd"))}</td>'
+            f'<td class="n">{_money(host.get("notional_usd"))}</td>'
             f'<td class="n">{_int(host.get("priced_cost_events"))} / '
             f"{_int(host.get('cost_events'))}</td>"
             f"<td>{cov}</td></tr>"
@@ -185,21 +209,103 @@ def _render_fleet(summary: dict[str, JsonValue], findings: dict[str, int] | None
         f"milton {escape(str(summary.get('milton_version')))}</p>"
         "<h2>Hosts</h2><table><tr><th>Host</th><th>Last collection</th><th>Last success</th>"
         "<th class='n'>Events</th><th class='n'>Selected cost</th>"
+        "<th class='n'>Notional (list)</th>"
         "<th class='n'>Priced / cost events</th><th>Source coverage</th></tr>"
         + "".join(rows)
-        + "<tr><td><strong>Fleet</strong></td><td></td><td></td>"
-        f"<td class='n'><strong>{_int(totals.get('event_count'))}</strong></td>"
-        f"<td class='n'><strong>{_money(totals.get('selected_cost_usd'))}</strong></td>"
-        "<td></td><td class='dim'>sum of host projections</td></tr></table>"
+        + "<tr><td><strong>Sum of hosts</strong></td><td></td><td></td>"
+        f"<td class='n'>{_int(totals.get('event_count'))}</td>"
+        f"<td class='n'>{_money(totals.get('selected_cost_usd'))}</td>"
+        "<td></td><td></td><td class='dim'>may count a shared source twice</td></tr>"
+        + _fleet_row(_dict(summary.get("fleet")))
+        + "</table>"
         '<p class="note">Each host is scanned on that host under the metadata content '
         "policy and keeps its own coverage. Fleet totals add host projections; they do not "
         "deduplicate observations that more than one host recorded. Selected cost follows "
         "the exact-key precedence in the accounting projection and covers only priced "
         "observations: usage that a source reports without an amount, such as subscription "
         "sessions, counts toward cost events but not toward selected cost. "
-        '<a href="/api/fleet.json">JSON</a></p>' + findings_html
+        "Notional is the same unpriced usage valued at public list prices: an estimate of "
+        "what it would cost on the API, never a charge. "
+        '<a href="/api/fleet.json">JSON</a></p>'
+        + _fleet_outcomes(_dict(summary.get("fleet")))
+        + findings_html
     )
     return _page("Milton", body)
+
+
+def _fleet_row(fleet: dict[str, JsonValue]) -> str:
+    if fleet.get("event_count") is None:
+        status = escape(str(fleet.get("status") or "not built"))
+        return (
+            f"<tr><td><strong>Fleet (merged)</strong></td><td class='{status}'>{status}</td>"
+            "<td colspan=6 class='dim'>No merged store yet.</td></tr>"
+        )
+    conflicts = 0
+    for item in _dict(fleet.get("merge")).values():
+        value = _dict(item).get("conflicts")
+        conflicts += value if isinstance(value, int) else 0
+    note = "deduplicated by event identity"
+    if conflicts:
+        note += f"; {conflicts:,} conflicting records kept from the first host"
+    return (
+        "<tr><td><strong>Fleet (merged)</strong></td>"
+        f"<td class='{escape(str(fleet.get('status')))}'>{escape(str(fleet.get('status')))}</td>"
+        f"<td class='dim'>{escape(_when(fleet.get('snapshot_at')))}</td>"
+        f"<td class='n'><strong>{_int(fleet.get('event_count'))}</strong></td>"
+        f"<td class='n'><strong>{_money(fleet.get('selected_cost_usd'))}</strong></td>"
+        f"<td class='n'><strong>{_money(fleet.get('notional_usd'))}</strong></td>"
+        f"<td></td><td class='dim'>{escape(note)}</td></tr>"
+    )
+
+
+def _outcome_rows(
+    outcomes: dict[str, JsonValue], notional_outcomes: dict[str, JsonValue]
+) -> tuple[str, str]:
+    selected = _dict(outcomes.get("denominators"))
+    notional = _dict(notional_outcomes.get("denominators"))
+    rows = []
+    for outcome_type in sorted(set(selected) | set(notional)):
+        priced = _dict(selected.get(outcome_type))
+        valued = _dict(notional.get(outcome_type))
+        if not priced.get("outcomes") and not valued.get("outcomes"):
+            continue
+        rows.append(
+            f"<tr><td>{escape(outcome_type)}</td>"
+            f"<td class='n'>{_int(valued.get('outcomes') or priced.get('outcomes'))}</td>"
+            f"<td class='n'>{_money(priced.get('attributed_usd'))}</td>"
+            f"<td class='n'>{_money(valued.get('attributed_usd'))}</td>"
+            f"<td class='n'>{_money(valued.get('cost_per_outcome_usd'))}</td></tr>"
+        )
+    amounts = _dict(notional_outcomes.get("amounts_usd"))
+    summary = (
+        f"<p class='note'>Priced plus notional: {_money(amounts.get('selected_total'))} = "
+        f"attributed {_money(amounts.get('attributed'))} + ambiguous "
+        f"{_money(amounts.get('ambiguous'))} + unallocated "
+        f"{_money(amounts.get('unallocated'))}. Attribution follows exact recorded "
+        "relations only; unallocated spend has no recorded path to a typed outcome.</p>"
+    )
+    table = (
+        "<table><tr><th>Outcome type</th><th class='n'>Outcomes</th>"
+        "<th class='n'>Priced attributed</th><th class='n'>Priced + notional</th>"
+        "<th class='n'>Per outcome (priced + notional)</th></tr>"
+        + ("".join(rows) or "<tr><td colspan=5 class='dim'>No attributed outcomes.</td></tr>")
+        + "</table>"
+    )
+    return summary, table
+
+
+def _fleet_outcomes(fleet: dict[str, JsonValue]) -> str:
+    if fleet.get("event_count") is None:
+        return ""
+    summary, table = _outcome_rows(
+        _dict(fleet.get("outcomes")), _dict(fleet.get("notional_outcomes"))
+    )
+    return (
+        "<h2>Cost per outcome across hosts</h2>"
+        "<p class='note'>Computed on the merged fleet store, so an outcome recorded on one "
+        "host can claim spend recorded on another. Notional pricing: "
+        f"{escape(str(fleet.get('pricing_version')))}.</p>" + summary + table
+    )
 
 
 def _render_host(name: str, entry: dict[str, JsonValue], snapshot: dict[str, JsonValue]) -> str:
@@ -230,16 +336,31 @@ def _render_host(name: str, entry: dict[str, JsonValue], snapshot: dict[str, Jso
             f"<td class='n'>{_int(item.get('malformed_records'))}</td>"
             f"<td class='dim'>{escape(str(item.get('last_ingested_at')))}</td></tr>"
         )
-    outcomes = _dict(snapshot.get("outcomes"))
-    amounts = _dict(outcomes.get("amounts_usd"))
-    denominator_rows = []
-    for outcome_type, raw in sorted(_dict(outcomes.get("denominators")).items()):
-        item = _dict(raw)
-        denominator_rows.append(
-            f"<tr><td>{escape(outcome_type)}</td><td class='n'>{_int(item.get('outcomes'))}</td>"
-            f"<td class='n'>{_money(item.get('attributed_usd'))}</td>"
-            f"<td class='n'>{_money(item.get('cost_per_outcome_usd'))}</td></tr>"
-        )
+    outcome_summary, outcome_table = _outcome_rows(
+        _dict(snapshot.get("outcomes")), _dict(snapshot.get("notional_outcomes"))
+    )
+    notional = _dict(snapshot.get("notional"))
+    model_rows = "".join(
+        f"<tr><td>{escape(model)}</td><td class='n'>{_int(_dict(item).get('events'))}</td>"
+        f"<td class='n'>{_money(_dict(item).get('amount_usd'))}</td></tr>"
+        for model, item in sorted(_dict(notional.get("by_model")).items())
+    )
+    unvalued = ", ".join(
+        f"{model} ({count})"
+        for model, count in sorted(_dict(notional.get("unvalued_models")).items())
+    )
+    notional_html = (
+        "<h2>Notional value of unpriced usage</h2>"
+        f"<p class='note'>{_int(notional.get('valued_events'))} of "
+        f"{_int(notional.get('unpriced_cost_events'))} unpriced cost events valued at list "
+        f"price ({escape(str(notional.get('pricing_version')))}): "
+        f"<strong>{_money(notional.get('amount_usd'))}</strong>. An estimate, not a charge."
+        + (f" No list price for: {escape(unvalued)}." if unvalued else "")
+        + "</p><table><tr><th>Model</th><th class='n'>Events</th>"
+        "<th class='n'>Notional</th></tr>"
+        + (model_rows or "<tr><td colspan=3 class='dim'>None.</td></tr>")
+        + "</table>"
+    )
     status = escape(str(entry.get("status") or "unknown"))
     period = _dict(report.get("period"))
     body = (
@@ -255,14 +376,12 @@ def _render_host(name: str, entry: dict[str, JsonValue], snapshot: dict[str, Jso
         "<th class='n'>Discovered</th><th class='n'>Read</th><th class='n'>Failed</th>"
         "<th class='n'>Malformed</th><th>Last ingested</th></tr>"
         + "".join(coverage_rows)
-        + "</table><h2>Cost per outcome</h2>"
-        f"<p class='note'>Selected {_money(amounts.get('selected_total'))} = attributed "
-        f"{_money(amounts.get('attributed'))} + ambiguous {_money(amounts.get('ambiguous'))} "
-        f"+ unallocated {_money(amounts.get('unallocated'))}.</p>"
-        "<table><tr><th>Outcome type</th><th class='n'>Outcomes</th>"
-        "<th class='n'>Attributed</th><th class='n'>Per outcome</th></tr>"
-        + ("".join(denominator_rows) or "<tr><td colspan=4 class='dim'>None.</td></tr>")
-        + f'</table><p class="note"><a href="/api/hosts/{escape(name)}/snapshot.json">'
+        + "</table>"
+        + notional_html
+        + "<h2>Cost per outcome on this host</h2>"
+        + outcome_summary
+        + outcome_table
+        + f'<p class="note"><a href="/api/hosts/{escape(name)}/snapshot.json">'
         "Snapshot JSON</a></p>"
     )
     return _page(f"Milton · {name}", body)

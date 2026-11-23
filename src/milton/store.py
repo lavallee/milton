@@ -31,6 +31,7 @@ from milton.model import (
     parse_datetime,
 )
 from milton.outcomes import OutcomeAttributionProjection, build_outcome_attribution
+from milton.pricing import PriceTable, with_notional
 from milton.relations import (
     RelationDirection,
     RelationKind,
@@ -443,16 +444,24 @@ class MiltonStore:
         since: str | None = None,
         until: str | None = None,
         outcome_types: Iterable[str] | None = None,
+        notional: PriceTable | None = None,
     ) -> OutcomeAttributionProjection:
-        """Reconcile accounting-selected costs to current exact outcome paths."""
+        """Reconcile accounting-selected costs to current exact outcome paths.
+
+        With a price table, unpriced usage is valued at list price in memory
+        (``kind=notional``) and attributed alongside priced observations.
+        """
 
         window_events = tuple(self.events(since=since, until=until))
         cost_event_ids = {event.event_id for event in window_events if event.kind is EventKind.COST}
         coverage: dict[str, JsonValue] = {
             name: summary.to_dict() for name, summary in sorted(self.source_coverage().items())
         }
+        all_events = tuple(self.events())
+        if notional is not None:
+            all_events = with_notional(all_events, notional)
         return build_outcome_attribution(
-            tuple(self.events()),
+            all_events,
             self.current_crosswalks(),
             self.current_relations(),
             cost_event_ids=cost_event_ids,

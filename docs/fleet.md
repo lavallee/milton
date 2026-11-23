@@ -97,11 +97,32 @@ without an amount, such as a subscription coding-agent session, adds to the
 host's cost events but not to its selected cost. The dashboard shows priced
 cost events next to all cost events so the gap stays visible.
 
-Cost per outcome is computed inside each host's store. When the outcome and
-the spend that produced it are recorded on different hosts, for example a
-work-registry outcome on one machine and the agent session on another, the
-per-host projection reports that spend as unallocated. The fleet view does not
-join across hosts.
+Unpriced usage is also valued at public list prices. The notional column and
+each host page show that estimate next to selected cost, without mixing the
+two. See [notional valuation](accounting.md#notional-valuation-of-unpriced-usage).
+
+### Cross-host joins
+
+Host stores stay authoritative, and each host page computes cost per outcome
+inside its own store. When an outcome and the spend that produced it are
+recorded on different hosts, for example a work-runner receipt on one machine
+and the agent session on another, only a combined store can connect them.
+
+After every collection, `milton fleet collect` therefore rebuilds a derived
+store, `OUT/_fleet/events.db`, from the host stores, and snapshots it as
+`OUT/_fleet/snapshot.json`:
+
+- Exact replays of the same event are kept once.
+- A record whose identity collides with different content on another host,
+  such as a shared ledger synced to two machines with different paths, is
+  kept from the first host in manifest order. It is never overwritten. The
+  snapshot's `merge` section counts these conflicts per host.
+- The merged store is rebuilt from scratch on each run. Delete it at any
+  time; it is not a source of truth.
+
+The dashboard's **Fleet (merged)** row and **Cost per outcome across hosts**
+section come from this snapshot. The **Sum of hosts** row adds host
+projections without deduplication. Host names beginning with `_` are reserved.
 
 Fleet totals add host projections. They do not deduplicate a cost observation
 recorded on more than one host, such as a shared gateway ledger synced to two
