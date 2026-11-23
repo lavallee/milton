@@ -30,6 +30,8 @@ from milton.model import (
     parse_datetime,
 )
 
+_INTERACTION_TYPES = frozenset({"user", "assistant"})
+
 
 class ClaudeCodeAdapter:
     name = "claude-code"
@@ -89,9 +91,13 @@ class ClaudeCodeAdapter:
                         continue
 
                     timestamp_value = raw.get("timestamp")
-                    if timestamp_value is None and not isinstance(raw.get("message"), dict):
-                        # File snapshots, prompt/title state, and mode changes are
-                        # transcript metadata rather than timestamped interactions.
+                    if timestamp_value is None and (
+                        not isinstance(raw.get("message"), dict)
+                        or raw.get("type") not in _INTERACTION_TYPES
+                    ):
+                        # File snapshots, prompt/title state, mode changes, and
+                        # hash-keyed request-body blobs are transcript metadata
+                        # rather than timestamped interactions.
                         stats.skipped_records += 1
                         continue
                     try:

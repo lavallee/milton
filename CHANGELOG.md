@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Claude Code `api-request-blob` records (hash-keyed request bodies with a
+  `message` but no timestamp) are skipped as transcript metadata instead of
+  being counted as malformed. Current Claude Code transcripts produced
+  thousands of false `invalid-timestamp` warnings per host. A `user` or
+  `assistant` record without a timestamp is still malformed.
+
 ### Added
 
 - Import explicit Pi v3 session files for metadata-only call and usage accounting. Fab job attribution follows exact receipt relations.

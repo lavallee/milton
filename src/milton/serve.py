@@ -50,6 +50,12 @@ def _money(value: JsonValue) -> str:
         return "—"
 
 
+def _when(value: JsonValue) -> str:
+    if not isinstance(value, str) or len(value) < 16:
+        return "never" if value is None else str(value)
+    return f"{value[:10]} {value[11:16]}Z"
+
+
 def _int(value: JsonValue) -> str:
     return f"{value:,}" if isinstance(value, int) else "—"
 
@@ -66,6 +72,7 @@ def _page(title: str, body: str) -> str:
     return (
         '<!doctype html><html lang="en"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width, initial-scale=1">'
+        '<link rel="icon" href="data:,">'
         f"<title>{escape(title)}</title><style>{_STYLE}</style></head>"
         f"<body><main>{body}</main></body></html>"
     )
@@ -91,6 +98,7 @@ def fleet_summary(fleet_dir: Path) -> dict[str, JsonValue]:
             total_cost += Decimal(str(cost)) if cost is not None else Decimal(0)
         except InvalidOperation:
             pass
+        observations = _dict(_dict(report.get("accounting")).get("observations"))
         coverage = {
             adapter: _dict(item).get("status")
             for adapter, item in _dict(report.get("source_coverage")).items()
@@ -105,6 +113,8 @@ def fleet_summary(fleet_dir: Path) -> dict[str, JsonValue]:
                 "snapshot_at": snapshot.get("generated_at") if snapshot else None,
                 "event_count": events,
                 "selected_cost_usd": cost,
+                "cost_events": observations.get("cost_events"),
+                "priced_cost_events": observations.get("with_amount"),
                 "source_coverage": cast(JsonValue, coverage),
             }
         )
@@ -131,10 +141,15 @@ def _render_fleet(summary: dict[str, JsonValue], findings: dict[str, int] | None
         name = escape(str(host.get("name")))
         status = escape(str(host.get("status") or "unknown"))
         coverage = _dict(host.get("source_coverage"))
+        shown = {a: st for a, st in coverage.items() if st not in {"empty", "unavailable"}}
         cov = " ".join(
             f'<span class="{escape(str(state))}">{escape(adapter)}</span>'
-            for adapter, state in sorted(coverage.items())
+            + ("" if state == "ok" else f" ({escape(str(state))})")
+            for adapter, state in sorted(shown.items())
         )
+        if len(coverage) > len(shown):
+            cov += f' <span class="dim">+{len(coverage) - len(shown)} without data</span>'
+
         error = host.get("error")
         error_html = (
             f"<pre>{escape(str(error)[-400:])}</pre>" if error and status not in {"ok"} else ""
@@ -142,9 +157,11 @@ def _render_fleet(summary: dict[str, JsonValue], findings: dict[str, int] | None
         rows.append(
             f'<tr><td><a href="/hosts/{name}">{name}</a></td>'
             f'<td class="{status}">{status}{error_html}</td>'
-            f'<td class="dim">{escape(str(host.get("last_success_at") or "never"))}</td>'
+            f'<td class="dim">{escape(_when(host.get("last_success_at")))}</td>'
             f'<td class="n">{_int(host.get("event_count"))}</td>'
             f'<td class="n">{_money(host.get("selected_cost_usd"))}</td>'
+            f'<td class="n">{_int(host.get("priced_cost_events"))} / '
+            f"{_int(host.get('cost_events'))}</td>"
             f"<td>{cov}</td></tr>"
         )
     totals = _dict(summary.get("totals"))
@@ -164,19 +181,22 @@ def _render_fleet(summary: dict[str, JsonValue], findings: dict[str, int] | None
     body = (
         "<h1>Milton</h1>"
         f'<p class="sub">Fleet view · window {escape(str(window))} · '
-        f"collected {escape(str(summary.get('generated_at') or 'never'))} · "
+        f"collected {escape(_when(summary.get('generated_at')))} · "
         f"milton {escape(str(summary.get('milton_version')))}</p>"
         "<h2>Hosts</h2><table><tr><th>Host</th><th>Last collection</th><th>Last success</th>"
-        "<th class='n'>Events</th><th class='n'>Selected cost</th><th>Source coverage</th></tr>"
+        "<th class='n'>Events</th><th class='n'>Selected cost</th>"
+        "<th class='n'>Priced / cost events</th><th>Source coverage</th></tr>"
         + "".join(rows)
         + "<tr><td><strong>Fleet</strong></td><td></td><td></td>"
         f"<td class='n'><strong>{_int(totals.get('event_count'))}</strong></td>"
         f"<td class='n'><strong>{_money(totals.get('selected_cost_usd'))}</strong></td>"
-        "<td class='dim'>sum of host projections</td></tr></table>"
+        "<td></td><td class='dim'>sum of host projections</td></tr></table>"
         '<p class="note">Each host is scanned on that host under the metadata content '
         "policy and keeps its own coverage. Fleet totals add host projections; they do not "
         "deduplicate observations that more than one host recorded. Selected cost follows "
-        "the exact-key precedence in the accounting projection. "
+        "the exact-key precedence in the accounting projection and covers only priced "
+        "observations: usage that a source reports without an amount, such as subscription "
+        "sessions, counts toward cost events but not toward selected cost. "
         '<a href="/api/fleet.json">JSON</a></p>' + findings_html
     )
     return _page("Milton", body)

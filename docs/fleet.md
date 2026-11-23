@@ -92,6 +92,17 @@ ledger.
 The server has no authentication. Bind it to loopback or to a private network
 interface, and put any access control in front of it.
 
+Selected cost covers priced observations only. A source that reports usage
+without an amount, such as a subscription coding-agent session, adds to the
+host's cost events but not to its selected cost. The dashboard shows priced
+cost events next to all cost events so the gap stays visible.
+
+Cost per outcome is computed inside each host's store. When the outcome and
+the spend that produced it are recorded on different hosts, for example a
+work-registry outcome on one machine and the agent session on another, the
+per-host projection reports that spend as unallocated. The fleet view does not
+join across hosts.
+
 Fleet totals add host projections. They do not deduplicate a cost observation
 recorded on more than one host, such as a shared gateway ledger synced to two
 machines. If that applies to your fleet, scan the shared source on one host

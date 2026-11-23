@@ -297,3 +297,25 @@ def test_codex_active_tool_is_deferred_until_output_is_immutable(tmp_path: Path)
         assert (inserted, replayed) == (1, 0)
         inserted, replayed = store.append_events(second_events)
         assert (inserted, replayed) == (1, 1)
+
+
+def test_claude_adapter_skips_untimestamped_request_blobs(tmp_path: Path) -> None:
+    source = tmp_path / "session-blob.jsonl"
+    lines = (FIXTURES / "claude_code" / "session-1.jsonl").read_text().splitlines()
+    blob = {
+        "type": "api-request-blob",
+        "hash": "abc123",
+        "sessionId": "session-1",
+        "message": {"role": "user", "content": "request body"},
+    }
+    untimestamped_turn = {"type": "assistant", "message": {"role": "assistant", "content": []}}
+    source.write_text("\n".join([*lines, json.dumps(blob), json.dumps(untimestamped_turn)]) + "\n")
+    baseline = ClaudeCodeAdapter().read(FIXTURES / "claude_code" / "session-1.jsonl")
+    list(baseline.records)
+
+    read = ClaudeCodeAdapter().read(source)
+    list(read.records)
+
+    assert read.stats.skipped_records == baseline.stats.skipped_records + 1
+    # A real interaction without a timestamp is still malformed, not skipped.
+    assert read.stats.malformed_records == baseline.stats.malformed_records + 1
