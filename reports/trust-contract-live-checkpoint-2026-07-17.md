@@ -82,7 +82,7 @@ A0_CHECKPOINT_DIR="$(mktemp -d)"
 A0_CHECKPOINT_STORE="$A0_CHECKPOINT_DIR/events.db"
 A0_FAB_LEDGER="$HOME/.local/share/fab/ledger.jsonl"
 A0_SOMM_LEDGER="$HOME/.somm/global.sqlite"
-A0_GEORGE_LEDGER="../Central/.george/inbox/lisbon/2026-07.jsonl"
+A0_GEORGE_LEDGER="../Central/.george/inbox/HOST/2026-07.jsonl"
 A0_FAB_REPO="../fab"
 
 uv run milton ingest fab somm \

@@ -104,7 +104,7 @@ none of those systems can produce alone.
 ## Constraints
 
 - Python 3.12+, dependency-free core and built-in local adapters.
-- SQLite remains the rebuildable event/crosswalk index at Lisbon scale;
+- SQLite remains the rebuildable event/crosswalk index at single-workstation scale;
   append-only JSONL remains the finding history.
 - Raw source bodies stay in their owning stores by default; Milton records
   typed projections and source coordinates.

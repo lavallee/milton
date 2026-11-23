@@ -138,7 +138,7 @@ def test_george_adapter_reads_work_ledger_and_explicit_joins(tmp_path: Path) -> 
     inbox = tmp_path / "2026-07.jsonl"
     row = {
         "id": "george-entry-1",
-        "host": "lisbon",
+        "host": "host-a",
         "session": "fab-bridge",
         "kind": "done",
         "content": "private result",

@@ -9,7 +9,7 @@ retrieval is never represented as causal application.
 
 ## Live inventory
 
-A metadata-only Lisbon scan covered two native roots
+A metadata-only development-host scan covered two native roots
 (`~/.codex/memories` and `~/.agents/skills`) and two decision roots (Astrid and
 Edie):
 

@@ -1,6 +1,6 @@
 # Workplan: footprint and phases
 
-Status: the 28-task implementation plan was worked through on Lisbon on
+Status: the 28-task implementation plan was worked through on the development host on
 2026-07-17: 27 tasks completed and the George stale-gate live checkpoint was
 explicitly narrowed. The core contracts, twelve built-in source adapters,
 conservative cost-per-outcome projection, finding lifecycle, evaluated motif
@@ -74,7 +74,7 @@ cost tools, then past them by joining sources). Exit: one command answers
 "what did agents do this week and what did it cost," with a stated
 coverage map. No LLM calls anywhere in phase 0.
 
-Operational proof on Lisbon: the original deterministic eight read Claude
+Operational proof on the development host: the original deterministic eight read Claude
 Code, Codex, Somm, Fab, George, Git, Hermes, and OpenCode. Chip, Spindle,
 native-memory, and decision-memory later joined the built-in registry at their
 public receipt/readback boundaries. A fixed-cutoff repeat pass skips unchanged
@@ -145,7 +145,7 @@ candidate feed plus a return receipt that later operational outcomes can join.
 ## Decisions from the Phase 0 build
 
 1. SQLite remains the normalized event and crosswalk index; append-only JSONL
-   remains the findings ledger. Lisbon-scale scans do not require DuckDB.
+   remains the findings ledger. Development-host-scale scans do not require DuckDB.
 2. Somm call facts are mirrored into typed events while raw bodies remain in
    Somm and are referenced by native IDs.
 3. Metadata-only is the default. Sensitive bodies are hashed/length-counted;
@@ -154,7 +154,7 @@ candidate feed plus a return receipt that later operational outcomes can join.
    WAL awareness, Git-ref fingerprints, and stable IDs.
 5. Adapter conformance is enforced through host-shaped fixtures, privacy-mode
    tests, stable replay/conflict behavior, fail-open diagnostics, and a live
-   Lisbon first-pass/repeat-pass smoke gate.
+   development-host first-pass/repeat-pass smoke gate.
 6. Identity association and causal/workflow relation are separate contracts;
    connected records do not automatically prove attribution.
 7. Cross-source retrospective accounting and task outcomes belong in Milton;

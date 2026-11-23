@@ -39,7 +39,7 @@ adjustments learned while executing it.
 | A-3.2 Expand Somm evidence adapter | complete | Host-shaped v22 fixture selects exactly production + gold + judge, excludes campaign rollups, and traces eval/campaign/decision/recommendation/late-update evidence through activity. |
 | A-3.3 Execute Fab identity-receipts commission | complete | `fab.execution-receipt/v1` persists source custody, attempt correlation, native ids, terminal/delivery semantics, verifier proofs, artifacts, and child-keyed non-counting rollups. Fab suite: 469 passed. |
 | A-3.4 Ingest stable Fab verifier and artifact receipts | complete | Receipt-first adapter traces George→job→attempt→Somm/session→outcome/verifier/artifact without stdout matching; safe disposable proof selects/attributes `$0.25` once and excludes two Fab rollups. Milton suite: 76 passed. |
-| A-3.5 Execute George disposition commission | complete | George intake/disposition service and CLI, idempotent receipt replay, conflict closure, and one live refutation are accepted; dash-main deployment still lacks the new route. |
+| A-3.5 Execute George disposition commission | complete | George intake/disposition service and CLI, idempotent receipt replay, conflict closure, and one live refutation are accepted; production deployment still lacks the new route. |
 | A-3.6 Reconcile Somm overlap and export tuple evidence | complete | Milton exports exact implementation/profile/model/harness outcome snapshots; Somm consumes versioned JSON as evidence only and keeps policy changes explicit. Milton: 80 passed. Somm: 812 passed, 1 optional skip. |
 | A-4.1 Finding-quality evaluation harness | complete | Generator-neutral immutable result envelope binds generator/model/harness/parameters/source; partitions fail closed, calibration is append-only, and gate CLI consumes measured precision/recurrence/aggregation decisions. Suite: 83 passed. |
 | A-4.2 Direct analysis versus facet clustering | complete | Equal-budget local Qwen/Ollama comparison selected direct bounded synthesis: 1.00 precision, 0.889 recall, 1.00 stability versus facet-only 1.00/0.333/1.00; all counterexamples retained, no runtime dependency adopted. |
@@ -66,7 +66,7 @@ Baseline verification on 2026-07-17: `pytest`, `ruff check`, `ruff format
   Accepted A-3.1/A-3.2 after Somm's 806-test suite and Milton's normal-adapter
   cardinality fixture proved exact request accounting and non-counting
   rollups. Marked the already-accepted George commission A-3.5 complete while
-  retaining its dash-main deployment gap.
+  retaining its production deployment gap.
 - 2026-07-17: Completed A-3.3/A-3.4. Fab now distinguishes its chronological
   ledger from stable producer receipts and passes deterministic attempt ids as
   correlation. Milton prefers those receipts, keeps legacy stdout/ledger
