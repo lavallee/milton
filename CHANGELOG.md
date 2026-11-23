@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] — 2026-11-23
+
+### Fixed
+
+- **Release publishing:** the publish workflow now pins
+  `pypa/gh-action-pypi-publish` v1.14.3, whose Twine accepts core metadata
+  2.5 as emitted by current Hatchling. 0.2.0 was tagged but its upload was
+  rejected, so it never reached PyPI. 0.2.1 contains the same code as 0.2.0.
+
 ## [0.2.0] — 2026-11-23
 
 ### Fixed
