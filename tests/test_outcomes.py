@@ -418,3 +418,52 @@ def test_store_time_window_is_exclusive_and_conserves_selected_subset(tmp_path: 
     assert projection.selected_total_usd == Decimal("2.00")
     assert projection.attributed_total_usd == Decimal("2.00")
     assert [record.cost_event_id for record in projection.records] == [after_cost.event_id]
+
+
+def test_target_pruned_walks_match_unpruned_walks_for_every_target_key() -> None:
+    import random
+
+    from milton.outcomes import (
+        PathStep,
+        PathStepKind,
+        _distance_to_targets,
+        _Edge,
+        _walk_graph,
+    )
+
+    rng = random.Random(20261123)
+    for trial in range(300):
+        nodes = [TypedRef("n", str(index)) for index in range(rng.randint(2, 40))]
+        graph: dict[TypedRef, tuple[_Edge, ...]] = {}
+        for source in nodes:
+            edges = []
+            for target in rng.sample(nodes, rng.randint(0, min(6, len(nodes)))):
+                edges.append(
+                    _Edge(
+                        target,
+                        PathStep(
+                            PathStepKind.CROSSWALK,
+                            source,
+                            target,
+                            f"{source.value}->{target.value}",
+                            None,
+                            None,
+                            "forward",
+                        ),
+                        rng.random() < 0.3,
+                    )
+                )
+            graph[source] = tuple(edges)
+        targets = set(rng.sample(nodes, rng.randint(1, min(4, len(nodes)))))
+        roots = tuple(sorted(rng.sample(nodes, rng.randint(1, min(3, len(nodes))))))
+        depth = rng.randint(1, 8)
+        distance = _distance_to_targets(graph, targets)
+
+        full = _walk_graph(roots, graph, max_depth=depth)
+        pruned = _walk_graph(roots, graph, max_depth=depth, distance=distance)
+
+        for key, walk in pruned.items():
+            assert full[key] == walk, (trial, key)
+        for (reference, relation_used), walk in full.items():
+            if reference in targets:
+                assert pruned[(reference, relation_used)] == walk, (trial, reference)

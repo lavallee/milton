@@ -330,6 +330,7 @@ def build_outcome_attribution(
     current_relations = tuple(relations)
     graph = _build_graph(tuple(crosswalks), current_relations, all_events)
     barnowl_receipt_walks = _barnowl_receipt_walks(current_relations)
+    distance = _distance_to_targets(graph, (candidate.reference for candidate in candidates))
     records: list[OutcomeAttributionRecord] = []
     for cost in sorted(selected_costs, key=lambda item: (item.occurred_at, item.event_id)):
         roots, lineage_event_ids = _cost_roots(cost, by_id)
@@ -343,6 +344,7 @@ def build_outcome_attribution(
                 exact_somm_call_root=_exact_somm_call_root(cost, by_id),
                 barnowl_receipt_walks=barnowl_receipt_walks,
                 max_depth=max_depth,
+                distance=distance,
             )
         )
 
@@ -381,6 +383,7 @@ def _attribute_cost(
     exact_somm_call_root: TypedRef | None,
     barnowl_receipt_walks: dict[tuple[TypedRef, TypedRef], tuple[_Walk, ...]],
     max_depth: int,
+    distance: dict[TypedRef, int] | None = None,
 ) -> OutcomeAttributionRecord:
     payload = cost.payload
     if not isinstance(payload, CostPayload) or payload.amount_usd is None:  # defensive
@@ -392,7 +395,7 @@ def _attribute_cost(
             AttributionReason.NO_ROOT_REFERENCE,
         )
 
-    walks = _walk_graph(roots, graph, max_depth=max_depth)
+    walks = _walk_graph(roots, graph, max_depth=max_depth, distance=distance)
     candidate_paths: list[CandidatePath] = []
     for candidate in candidates:
         relation_walk: _Walk | None
@@ -832,12 +835,49 @@ def _event_ref(event: NormalizedEvent) -> TypedRef | None:
     return None
 
 
+def _distance_to_targets(
+    graph: dict[TypedRef, tuple[_Edge, ...]], targets: Iterable[TypedRef]
+) -> dict[TypedRef, int]:
+    """Fewest edges from each node to any target, by reverse breadth-first search."""
+
+    reverse: dict[TypedRef, list[TypedRef]] = {}
+    for source, edges in graph.items():
+        for edge in edges:
+            reverse.setdefault(edge.target, []).append(source)
+    distance: dict[TypedRef, int] = {}
+    queue: deque[TypedRef] = deque()
+    for target in targets:
+        if target not in distance:
+            distance[target] = 0
+            queue.append(target)
+    while queue:
+        node = queue.popleft()
+        for source in reverse.get(node, ()):
+            if source not in distance:
+                distance[source] = distance[node] + 1
+                queue.append(source)
+    return distance
+
+
 def _walk_graph(
     roots: tuple[TypedRef, ...],
     graph: dict[TypedRef, tuple[_Edge, ...]],
     *,
     max_depth: int,
+    distance: dict[TypedRef, int] | None = None,
 ) -> dict[tuple[TypedRef, bool], _Walk]:
+    """Breadth-first walks from the roots, keyed by (reference, relation_used).
+
+    With ``distance`` (from ``_distance_to_targets``), edges into nodes that
+    cannot reach a target within the remaining depth are skipped. Every key
+    that can still reach a target, including each target, gets the same walk
+    as an unpruned search. Pruned nodes lead to no target at that depth, and
+    the surviving nodes keep their first-in, first-out order, so each
+    surviving key is claimed by the same parent along the same path. On large
+    connected identity graphs this turns a per-cost walk over the whole
+    component into one over the few nodes that lead to outcomes.
+    """
+
     queue: deque[_Walk] = deque()
     walks: dict[tuple[TypedRef, bool], _Walk] = {}
     for root in roots:
@@ -849,7 +889,10 @@ def _walk_graph(
         if len(walk.steps) >= max_depth:
             continue
         source = walk.references[-1]
+        remaining = max_depth - len(walk.steps) - 1
         for edge in graph.get(source, ()):
+            if distance is not None and distance.get(edge.target, remaining + 1) > remaining:
+                continue
             relation_used = walk.relation_used or edge.establishes_relation
             key = (edge.target, relation_used)
             if key in walks:
