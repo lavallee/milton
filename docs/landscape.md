@@ -141,24 +141,26 @@ contains outcome truth.
 
 ## Complementary local systems
 
-Projector's July software-factory scan remains the controlling local ownership
-context:
+The July 2026 software-factory scan, made by the since-retired Projector
+service, remains the controlling local ownership context. The ownership lines
+below were updated in November 2026 when Projector was replaced by the Yoinker
+skill; the rest of this document stands as dated:
 
 - George owns intent, decisions, and action disposition.
 - Fab owns supervised runs, recovery, and terminal/evidence receipts.
 - Somm owns model/provider/harness selection, hot-path spend control, and one
   mediated call or attempt's facts.
-- Projector owns external-development evidence, recommendations, experiment
-  gates, and adoption calibration.
+- Yoinker is the skill for assessing external developments; each assessment's
+  record, recommendations, and outcome log live with the project it concerns.
 - Milton owns retrospective projections and findings over internal operational
   exhaust.
 - Chip owns the procedure-candidate contract; Spindle owns composition,
   evaluation, distribution, and binding.
 
-The key crossfeed is outcome-shaped: Projector recommendations and
+The key crossfeed is outcome-shaped: Yoinker recommendations and
 Chip/Spindle promotions carry stable ids into George/Fab; Milton measures the
-later operational result; Projector, Somm, or Spindle may consume that versioned
-projection. None needs a copy of Milton's private event store.
+later operational result; the owning project's record, Somm, or Spindle may
+consume that versioned projection. None needs a copy of Milton's private event store.
 
 ## Evidence limits and refresh triggers
 
