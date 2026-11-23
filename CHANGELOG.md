@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Attribution performance:** outcome walks skip nodes that cannot reach any
+  candidate outcome within the remaining depth, using one reverse
+  breadth-first pass per projection. Walks to every outcome are unchanged
+  (property-tested against the unpruned search). On a large identity graph
+  where each walk had covered the whole connected component, a 30-day
+  projection went from over an hour to about two minutes.
+
 ## [0.2.1] — 2026-11-23
 
 ### Fixed
