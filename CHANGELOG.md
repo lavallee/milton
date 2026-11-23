@@ -7,9 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Claude Code `api-request-blob` records (hash-keyed request bodies with a
+  `message` but no timestamp) are skipped as transcript metadata instead of
+  being counted as malformed. Current Claude Code transcripts produced
+  thousands of false `invalid-timestamp` warnings per host. A `user` or
+  `assistant` record without a timestamp is still malformed.
+
 ### Added
 
 - Import explicit Pi v3 session files for metadata-only call and usage accounting. Fab job attribution follows exact receipt relations.
+- **Fleet collection:** `milton fleet collect --hosts MANIFEST` runs
+  `milton scan` on each declared host (SSH, or `ssh = "local"`) under the
+  metadata content policy, copies back only the normalized store, and writes a
+  per-host snapshot and a status index. Failed hosts keep their last good
+  snapshot. Scans run from a per-command state directory, so a Milton upgrade
+  builds a fresh store and cwd-relative adapters never walk a remote home.
+  See [fleet collection](docs/fleet.md).
+- **Dashboard:** `milton serve --fleet DIR` is a read-only standard-library
+  HTTP dashboard and JSON API over the snapshots, with a `/health` endpoint.
+  Fleet totals are labeled as sums of host projections.
 
 - A dependency-free, explicit-source-only `barnowl.research-outcome/v1`
   adapter with strict private-safe validation and exact Somm-call cost
