@@ -336,6 +336,24 @@ def _parser() -> argparse.ArgumentParser:
     _add_ingest_arguments(ingest)
     scan = subparsers.add_parser("scan", help="ingest sources and report in one pass")
     _add_ingest_arguments(scan)
+
+    fleet = subparsers.add_parser("fleet", help="collect per-host stores into a fleet view")
+    fleet_commands = fleet.add_subparsers(dest="fleet_command", required=True)
+    fleet_collect = fleet_commands.add_parser(
+        "collect", help="scan each manifest host on that host and snapshot its store"
+    )
+    fleet_collect.add_argument("--hosts", type=Path, required=True, help="hosts manifest (TOML)")
+    fleet_collect.add_argument("--out", type=Path, default=Path(".milton/fleet"))
+    fleet_collect.add_argument(
+        "--host", action="append", default=[], help="collect only this host; repeatable"
+    )
+    fleet_collect.add_argument("--workers", type=int, default=4)
+
+    serve = subparsers.add_parser("serve", help="serve a read-only fleet dashboard")
+    serve.add_argument("--fleet", type=Path, default=Path(".milton/fleet"))
+    serve.add_argument("--findings", type=Path, help="optional findings ledger to summarize")
+    serve.add_argument("--bind", default="127.0.0.1")
+    serve.add_argument("--port", type=int, default=8917)
     return parser
 
 
@@ -542,6 +560,28 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         if args.command == "memory":
             return _run_memory(args)
+
+        if args.command == "fleet":
+            from milton.fleet import collect_fleet, load_fleet_config, require_tools
+
+            config = load_fleet_config(args.hosts)
+            require_tools(config)
+            index = collect_fleet(config, args.out, only=args.host, workers=args.workers)
+            hosts = cast(list[dict[str, JsonValue]], index["hosts"])
+            selected = [item for item in hosts if not args.host or item["name"] in args.host]
+            for item in selected:
+                line = f"{item['name']}: {item['status']}"
+                if item["status"] not in {"ok"} and item.get("error"):
+                    line += f" ({str(item['error']).splitlines()[-1][:200]})"
+                print(line)
+            failed = [item for item in selected if item["status"] in {"error", "unreachable"}]
+            return 1 if failed else 0
+
+        if args.command == "serve":
+            from milton.serve import serve
+
+            serve(args.fleet, host=args.bind, port=args.port, findings=args.findings)
+            return 0
 
         if args.command in {"ingest", "scan"}:
             roots = _parse_sources(args.source)

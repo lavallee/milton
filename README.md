@@ -99,9 +99,19 @@ tool, George context, and commit-message bodies are hashed and redacted unless
 `--content full` is explicitly selected. Adapter failures are isolated and
 persisted as coverage state; one unavailable source cannot block the rest.
 
-On Lisbon, the default discovery roots cover the live local stores. Override a
+The default discovery roots cover each tool's standard local store. Override a
 root when needed with a repeatable `--source ADAPTER=PATH` option. The built-in
 adapters and their coverage are documented in [source adapters](docs/adapters.md).
+
+To report across several machines, `milton fleet collect` scans each host on
+that host, copies back only the metadata-only normalized store, and snapshots
+it; `milton serve` renders a read-only dashboard over the result. See
+[fleet collection](docs/fleet.md).
+
+```console
+uv run milton fleet collect --hosts hosts.toml --out .milton/fleet
+uv run milton serve --fleet .milton/fleet --port 8917
+```
 
 To inspect everything connected to a George/Fab run:
 
